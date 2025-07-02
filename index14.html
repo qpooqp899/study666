@@ -231,6 +231,12 @@
     <button onclick="nextWord()">下一題</button>
     <button id="hintBtn" onclick="showHint()">提示</button>
   </div>
+  <div style="margin:10px 0;">
+    <button id="replayWordBtn" style="display:none;font-size:18px;padding:8px 18px;">🔊 重新發音</button>
+    <label style="margin-left:18px;font-size:16px;color:#1976d2;font-weight:bold;">發音速度</label>
+    <input type="range" id="ttsRate" min="0.5" max="1.5" step="0.1" value="0.5" style="width:120px;vertical-align:middle;">
+    <span id="rateVal" style="font-size:15px;color:#1976d2;">0.5</span>
+  </div>
   <div class="volume-control">
     <label for="bgmVolume">背景音樂</label>
     <input type="range" id="bgmVolume" class="volume-slider" min="0" max="1" step="0.01" value="0.5">
@@ -359,6 +365,7 @@ function displayShuffled() {
     btn.onclick = () => {
       clickSound.currentTime = 0;
       clickSound.play();
+      speakLetter(letter); // 點字母時發音
       selected += letter;
       document.getElementById("answer").textContent = selected;
       btn.disabled = true;
@@ -371,6 +378,38 @@ function displayShuffled() {
   });
 }
 
+let ttsRate = 1.0;
+const ttsRateSlider = document.getElementById("ttsRate");
+const rateVal = document.getElementById("rateVal");
+ttsRateSlider.addEventListener("input", function() {
+  ttsRate = parseFloat(this.value);
+  rateVal.textContent = ttsRate.toFixed(2);
+});
+
+// TTS 單字發音
+function speak(text, rate = ttsRate) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.rate = rate;
+  window.speechSynthesis.speak(utter);
+}
+
+// 點字母發音
+function speakLetter(letter) {
+  speak(letter);
+}
+
+// 完整單字發音
+function speakWord() {
+  speak(currentWord);
+}
+
+// 重新發音按鈕
+document.getElementById("replayWordBtn").onclick = speakWord;
+
+// 修改 checkAnswer，正確時自動發音並顯示 replay 按鈕
 function checkAnswer() {
   const result = document.getElementById("result");
   if (selected === currentWord) {
@@ -379,12 +418,15 @@ function checkAnswer() {
     correctSound.currentTime = 0;
     correctSound.play();
     document.getElementById("hintBtn").style.display = "none";
+    document.getElementById("replayWordBtn").style.display = "inline-block";
+    speakWord(); // 正確後完整單字發音
     wrongCount = 0;
   } else {
     result.textContent = "❌ 錯誤，請再試一次！";
     result.style.color = "red";
     wrongSound.currentTime = 0;
     wrongSound.play();
+    document.getElementById("replayWordBtn").style.display = "none";
     wrongCount++;
     if (wrongCount >= 3) {
       document.getElementById("hintBtn").style.display = "inline-block";
@@ -392,15 +434,17 @@ function checkAnswer() {
   }
 }
 
+// resetGame 時隱藏 replay 按鈕
 function resetGame() {
   selected = "";
   document.getElementById("answer").textContent = "";
   document.getElementById("result").textContent = "";
   document.getElementById("hintBtn").style.display = "none";
-  
+  document.getElementById("replayWordBtn").style.display = "none";
   displayShuffled();
 }
 
+// nextWord 時也隱藏 replay 按鈕
 function nextWord() {
   const randomIndex = Math.floor(Math.random() * wordList.length);
   currentWord = wordList[randomIndex].word;
