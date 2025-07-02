@@ -66,6 +66,16 @@
 <body>
   <h1>🧩 單詞拼句王</h1>
 
+  <!-- 新增：顯示目前第幾題 -->
+  <div id="progress" style="font-size:20px; color:#1976d2; margin-bottom:10px;"></div>
+
+  <!-- 新增：題目選擇下拉選單 -->
+  <div style="margin-bottom:12px;">
+    <label for="questionSelect" style="font-size:16px;">選擇題號：</label>
+    <select id="questionSelect" style="font-size:16px; padding:3px 8px;"></select>
+    <button class="action" onclick="jumpToQuestion()">跳到題目</button>
+  </div>
+
   <!-- 顯示中文題目 -->
   <div class="question" id="chQuestion" style="font-size:26px; margin:20px 0; color:#444;"></div>
 
@@ -113,6 +123,28 @@
     let currentIndex = 0;
     let isCorrect = false;
 
+    // 新增：初始化題目選擇下拉選單
+    const questionSelect = document.getElementById("questionSelect");
+    sentences.forEach((s, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.text = `第 ${idx + 1} 題：${s.ch}`;
+      questionSelect.appendChild(opt);
+    });
+
+    // 新增：跳到指定題目
+    function jumpToQuestion() {
+      currentIndex = parseInt(questionSelect.value, 10);
+      isCorrect = false;
+      loadSentence(currentIndex);
+      document.getElementById("nextBtn").style.display = "none";
+    }
+
+    function updateProgress() {
+      document.getElementById("progress").innerText = `第 ${currentIndex + 1} / ${sentences.length} 題`;
+      questionSelect.value = currentIndex;
+    }
+
     function checkSentence() {
       const output = document.getElementById("sentenceOutput");
       const correct = sentences[currentIndex].words;
@@ -157,6 +189,7 @@
         btnBox.appendChild(btn);
       });
       document.getElementById("nextBtn").style.display = "none";
+      updateProgress(); // 新增：更新進度顯示
     }
 
     function addWord(word) {
