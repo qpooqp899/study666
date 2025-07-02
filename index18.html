@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>單詞拼句王</title>
+  <style>
+    body {
+      font-family: "Comic Sans MS", sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: #fff8e7;
+    }
+    .image-box {
+      margin: 20px 0;
+    }
+    img {
+      max-width: 80%;
+      height: auto;
+    }
+    .word-buttons button {
+      font-size: 24px;
+      margin: 8px;
+      padding: 15px 20px;
+      background-color: #ffcc70;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 2px 2px 5px #ccc;
+    }
+    .word-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .word-buttons button:hover {
+      background-color: #ffa500;
+      cursor: pointer;
+    }
+    .output {
+      margin-top: 20px;
+      font-size: 28px;
+      color: #333;
+      min-height: 40px;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    button.action {
+      font-size: 22px;
+      margin: 10px;
+      padding: 10px 18px;
+      background-color: #a0e7e5;
+      border: none;
+      border-radius: 10px;
+    }
+    @media screen and (max-width: 600px) {
+      .word-buttons button, button.action {
+        font-size: 20px;
+        padding: 12px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🧩 單詞拼句王</h1>
+
+  <!-- 顯示中文題目 -->
+  <div class="question" id="chQuestion" style="font-size:26px; margin:20px 0; color:#444;"></div>
+
+  <div class="word-buttons" id="wordButtons"></div>
+
+  <div class="output" id="sentenceOutput"></div>
+  <button class="action" onclick="checkSentence()">✅ 檢查句子/發音</button>
+  <button class="action" onclick="resetSentence()">🔁 重設</button>
+  <button class="action" id="nextBtn" onclick="nextSentence()" style="display:none;">➡️ 下一題</button>
+  <div>
+    <label for="rateSlider">語音速度:</label>
+    <input type="range" id="rateSlider" min="0.1" max="1.5" step="0.1" value="0.5" /> 
+    <span id="rateValue">0.5</span>
+  </div>
+
+  <script>
+    document.getElementById("rateSlider").addEventListener("input", function() {
+      document.getElementById("rateValue").innerText = this.value;
+    }); 
+
+    const sentences = [
+      { words: ["I", "eat", "apple"], options: ["I", "eat", "apple", "banana", "He"], ch: "我吃蘋果" },
+      { words: ["The", "dog", "runs"], options: ["The", "dog", "runs", "jumps", "cat"], ch: "狗在跑" },
+      { words: ["She", "likes", "music"], options: ["She", "likes", "music", "food", "dance"], ch: "她喜歡音樂" },
+      { words: ["The", "boy", "jumps"], options: ["The", "boy", "jumps", "runs", "plays"], ch: "男孩在跳" },
+      { words: ["A", "cat", "sleeps"], options: ["A", "cat", "sleeps", "barks", "eats"], ch: "貓在睡覺" },
+      { words: ["Children", "play", "outside"], options: ["Children", "play", "outside", "inside", "school"], ch: "小孩在外面玩" },
+      { words: ["We", "go", "to", "school"], options: ["We", "go", "to", "school", "home"], ch: "我們去學校" },
+      { words: ["He", "rides", "a", "bus"], options: ["He", "rides", "a", "bus", "car"], ch: "他搭公車" },
+      { words: ["She", "reads", "a", "book"], options: ["She", "reads", "a", "book", "pencil"], ch: "她在讀書" },
+      { words: ["He", "has", "an", "apple"], options: ["He", "has", "an", "apple", "banana"], ch: "他有一個蘋果" },
+      { words: ["I", "kick", "a", "ball"], options: ["I", "kick", "a", "ball", "run"], ch: "我踢球" },
+      { words: ["The", "book", "is", "on", "the", "table"], options: ["The", "book", "is", "on", "the", "table"], ch: "書在桌上" },
+      { words: ["It", "is", "ten", "o'clock"], options: ["It", "is", "ten", "o'clock", "now"], ch: "現在十點鐘" },
+      { words: ["Time", "to", "sleep"], options: ["Time", "to", "sleep", "wake", "eat"], ch: "該睡覺了" },
+      { words: ["The", "sun", "is", "bright"], options: ["The", "sun", "is", "bright", "dark"], ch: "太陽很明亮" },
+      { words: ["We", "live", "in", "a", "house"], options: ["We", "live", "in", "a", "house"], ch: "我們住在一個房子裡" },
+      { words: ["Mom", "cooks", "in", "the", "kitchen"], options: ["Mom", "cooks", "in", "the", "kitchen"], ch: "媽媽在廚房煮飯" },
+      { words: ["We", "love", "our", "family"], options: ["We", "love", "our", "family", "friends"], ch: "我們愛我們的家庭" },
+      { words: ["They", "eat", "ice", "cream"], options: ["They", "eat", "ice", "cream", "cake"], ch: "他們吃冰淇淋" },
+      { words: ["Birds", "live", "in", "trees"], options: ["Birds", "live", "in", "trees", "sky"], ch: "鳥兒住在樹上" },
+    ];
+
+    let sentence = [];
+    let currentIndex = 0;
+    let isCorrect = false;
+
+    function checkSentence() {
+      const output = document.getElementById("sentenceOutput");
+      const correct = sentences[currentIndex].words;
+      if (JSON.stringify(sentence) === JSON.stringify(correct)) {
+        output.innerHTML = `<span class="success">🎉 正確！</span><br>
+          <span style="font-size:22px;">${correct.join(" ")}<br>👉 ${sentences[currentIndex].ch}</span>`;
+        speakSentence(sentence.join(" "));
+        document.getElementById("nextBtn").style.display = "inline-block";
+        isCorrect = true;
+      } else {
+        output.innerHTML += ' ❌ 錯誤，再試一次！';
+      }
+    }
+
+    function nextSentence() {
+      currentIndex++;
+      if (currentIndex >= sentences.length) {
+        currentIndex = 0;
+      }
+      isCorrect = false;
+      loadSentence(currentIndex);
+      document.getElementById("nextBtn").style.display = "none";
+    }
+
+    function loadSentence(index) {
+      sentence = [];
+      if (!isCorrect) {
+        document.getElementById("sentenceOutput").innerText = "";
+      }
+      // 顯示中文題目
+      document.getElementById("chQuestion").innerText = sentences[index].ch;
+      const btnBox = document.getElementById("wordButtons");
+      btnBox.innerHTML = "";
+
+      // 隨機排列 options
+      const shuffled = sentences[index].options.slice().sort(() => Math.random() - 0.5);
+
+      shuffled.forEach(word => {
+        const btn = document.createElement("button");
+        btn.innerText = word;
+        btn.onclick = () => addWord(word);
+        btnBox.appendChild(btn);
+      });
+      document.getElementById("nextBtn").style.display = "none";
+    }
+
+    function addWord(word) {
+      if (isCorrect) return;
+      sentence.push(word);
+      document.getElementById("sentenceOutput").innerText = sentence.join(" ");
+    }
+
+    function resetSentence() {
+      if (isCorrect) return;
+      sentence = [];
+      document.getElementById("sentenceOutput").innerText = "";
+    }
+
+    function speakSentence(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = 'en-US';
+      msg.rate = document.getElementById("rateSlider") ? parseFloat(document.getElementById("rateSlider").value) : 0.8;
+      window.speechSynthesis.speak(msg);
+    }
+
+    loadSentence(currentIndex);
+  </script>
+</body>
+</html>
