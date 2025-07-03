@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>進階拉霸機 v3</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: url("bg.jpg") no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+    }
+
+    .slot-machine {
+      max-width: 400px;
+      margin: 60px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 20px;
+      box-shadow: 0 0 20px #000;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      background-color: #000;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      background: gold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #info {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    #result {
+      font-size: 22px;
+      margin-top: 10px;
+    }
+
+    #coin-anim {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 40px;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .coin-fly {
+      animation: coinFly 1s ease-out forwards;
+    }
+
+    @keyframes coinFly {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -300%) scale(0.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="slot-machine">
+    <h1>🎰 拉霸機</h1>
+    <canvas id="slotCanvas" width="300" height="300"></canvas>
+    <div id="info">
+      💰 金幣：<span id="coins">0</span>｜🧬 等級：<span id="level">1</span>
+      <br>
+      ⏳ 下次補幣：<span id="coin-timer">--:--</span>
+    </div>
+    <button onclick="startSpin()">開始！</button>
+    <div id="result"></div>
+    <div id="coin-anim">💰</div>
+  </div>
+
+  <!-- 音效 -->
+  <audio id="spinSound" src="spin.mp3"></audio>
+  <audio id="winSound" src="win.mp3"></audio>
+
+  <script>
+    const canvas = document.getElementById("slotCanvas");
+    const ctx = canvas.getContext("2d");
+    const symbols = ["🍒", "🍋", "🍊", "⭐", "💎", "🎁"]; // 🎁 = 雙倍
+    const baseWeights = [3, 3, 2, 1.5, 1, 0.3];
+
+    let coins = parseInt(localStorage.getItem("coins") || "100");
+    let level = parseInt(localStorage.getItem("level") || "1");
+    let wins = parseInt(localStorage.getItem("wins") || "0");
+
+    const coinDisplay = document.getElementById("coins");
+    const levelDisplay = document.getElementById("level");
+    const resultText = document.getElementById("result");
+    const coinAnim = document.getElementById("coin-anim");
+    const timerDisplay = document.getElementById("coin-timer");
+
+    const reelCount = 3;
+    const reelWidth = canvas.width / reelCount;
+    const fontSize = 48;
+    const spinDuration = 1000;
+    let reels = [];
+
+    const spinSound = document.getElementById("spinSound");
+    const winSound = document.getElementById("winSound");
+
+    const COIN_INTERVAL = 360; // 秒
+    const COIN_AMOUNT = 10;
+
+    function updateUI() {
+      coinDisplay.textContent = coins;
+      levelDisplay.textContent = level;
+      localStorage.setItem("coins", coins);
+      localStorage.setItem("level", level);
+      localStorage.setItem("wins", wins);
+    }
+
+    function getWeightedSymbolIndex() {
+      const weights = baseWeights.map(w => w + level * 0.1);
+      const total = weights.reduce((a, b) => a + b, 0);
+      let r = Math.random() * total;
+      for (let i = 0; i < weights.length; i++) {
+        if (r < weights[i]) return i;
+        r -= weights[i];
+      }
+      return 0;
+    }
+
+    function initReels() {
+      reels = [];
+      for (let i = 0; i < reelCount; i++) {
+        reels.push({
+          symbolIndex: getWeightedSymbolIndex(),
+          offset: Math.random() * 500
+        });
+      }
+    }
+
+    function drawReels() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let i = 0; i < reelCount; i++) {
+        const x = reelWidth * i + reelWidth / 2;
+        const symbol = symbols[reels[i].symbolIndex];
+        ctx.fillText(symbol, x, canvas.height / 2);
+      }
+    }
+
+    function animateReels(startTime, callback) {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      for (let i = 0; i < reelCount; i++) {
+        if (elapsed < spinDuration + reels[i].offset) {
+          reels[i].symbolIndex = getWeightedSymbolIndex();
+        }
+      }
+      drawReels();
+      if (elapsed < spinDuration + 500) {
+        requestAnimationFrame(() => animateReels(startTime, callback));
+      } else {
+        callback();
+      }
+    }
+
+    function showCoinFly() {
+      coinAnim.classList.remove("coin-fly");
+      void coinAnim.offsetWidth; // reflow
+      coinAnim.classList.add("coin-fly");
+    }
+
+    function checkResult() {
+      const indices = reels.map(r => r.symbolIndex);
+      const symbolsShown = indices.map(i => symbols[i]);
+
+      const isJackpot = indices.every(i => i === indices[0]);
+      const hasBonus = symbolsShown.includes("🎁");
+
+      if (isJackpot) {
+        let reward = hasBonus ? 100 : 50;
+        coins += reward;
+        wins++;
+        if (wins % 3 === 0) level++;
+        resultText.textContent = `🎉 中獎！你獲得 ${reward} 金幣`;
+        winSound.play();
+        showCoinFly();
+      } else {
+        resultText.textContent = `😢 沒中～ (${symbolsShown.join(" ")})`;
+      }
+
+      updateUI();
+    }
+
+    function startSpin() {
+      if (coins < 10) {
+        resultText.textContent = "💸 金幣不足，無法轉動。";
+        return;
+      }
+
+      coins -= 10;
+      spinSound.play();
+      resultText.textContent = "🎲 轉動中...";
+      updateUI();
+      initReels();
+      animateReels(Date.now(), checkResult);
+    }
+
+    function getNextCoinTime() {
+      return parseInt(localStorage.getItem("nextCoinTime") || "0");
+    }
+
+    function setNextCoinTime(ts) {
+      localStorage.setItem("nextCoinTime", ts);
+    }
+
+    function addCoinsIfReady() {
+      const now = Math.floor(Date.now() / 1000);
+      let nextTime = getNextCoinTime();
+      if (!nextTime || now >= nextTime) {
+        coins += COIN_AMOUNT;
+        resultText.textContent = `💰 自動補幣 +${COIN_AMOUNT}！`;
+        nextTime = now + COIN_INTERVAL;
+        setNextCoinTime(nextTime);
+        updateUI();
+      }
+    }
+
+    function updateCoinTimer() {
+      const now = Math.floor(Date.now() / 1000);
+      const nextTime = getNextCoinTime();
+      let remain = nextTime - now;
+      if (!nextTime || remain <= 0) {
+        timerDisplay.textContent = "00:00";
+      } else {
+        const min = String(Math.floor(remain / 60)).padStart(2, "0");
+        const sec = String(remain % 60).padStart(2, "0");
+        timerDisplay.textContent = `${min}:${sec}`;
+      }
+    }
+
+    // 每秒檢查自動補幣與倒數
+    setInterval(() => {
+      addCoinsIfReady();
+      updateCoinTimer();
+    }, 1000);
+
+    // 初始化補幣時間
+    if (!getNextCoinTime()) {
+      setNextCoinTime(Math.floor(Date.now() / 1000) + COIN_INTERVAL);
+    }
+    updateCoinTimer();
+
+    initReels();
+    drawReels();
+    updateUI();
+  </script>
+</body>
+</html>
