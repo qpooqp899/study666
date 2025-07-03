@@ -237,6 +237,42 @@
     <input type="range" id="ttsRate" min="0.5" max="1.5" step="0.1" value="0.5" style="width:120px;vertical-align:middle;">
     <span id="rateVal" style="font-size:15px;color:#1976d2;">0.5</span>
   </div>
+  <!-- 發音聲音大小 -->
+  <div class="volume-control">
+    <label for="ttsVolume">發音音量</label>
+    <input type="range" id="ttsVolume" class="volume-slider" min="0" max="1" step="0.01" value="1">
+    <span id="ttsVolumeVal" style="font-size:15px;color:#1976d2;">1.00</span>
+  </div>
+
+
+
+  <!-- 音效 -->
+  <audio id="clickSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b24e6cbfb.mp3?filename=button-16.mp3"></audio>
+  <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_64b4179b8a.mp3?filename=success-1-6297.mp3"></audio>
+  <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c75c7931e6.mp3?filename=error-126627.mp3"></audio>
+  <!-- 背景音樂 -->
+  <audio id="bgm" src="https://cdn.pixabay.com/audio/2023/03/28/audio_12b6b4e7e7.mp3" loop></audio>
+
+  <script>
+  let ttsVolume = 1.0;
+  const ttsVolumeSlider = document.getElementById("ttsVolume");
+  const ttsVolumeVal = document.getElementById("ttsVolumeVal");
+  ttsVolumeSlider.addEventListener("input", function() {
+    ttsVolume = parseFloat(this.value);
+    ttsVolumeVal.textContent = ttsVolume.toFixed(2);
+  });
+  ttsVolumeVal.textContent = ttsVolumeSlider.value; // 頁面載入時顯示初始值
+  function speak(text, rate = ttsRate) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    utter.rate = rate;
+    utter.volume = ttsVolume; // 一定要加這行，且 ttsVolume 要是 0~1 的數字
+    window.speechSynthesis.speak(utter);
+  }
+  </script>
+
   <div class="volume-control">
     <label for="bgmVolume">背景音樂</label>
     <input type="range" id="bgmVolume" class="volume-slider" min="0" max="1" step="0.01" value="0.5">
@@ -393,6 +429,7 @@ function speak(text, rate = ttsRate) {
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "en-US";
   utter.rate = rate;
+  utter.volume = ttsVolume; // 一定要加這行，且 ttsVolume 要是 0~1 的數字
   window.speechSynthesis.speak(utter);
 }
 
