@@ -109,7 +109,7 @@
   <div class="options" id="options"></div>
   <div class="controls">
     <button onclick="checkAnswer()">檢查 / 發音</button>
-    <button onclick="reset()">重設</button>
+    <button id="resetBtn" onclick="reset()">重設</button>
     <button id="nextBtn" onclick="nextQuestion()" disabled>下一題</button>
   </div>
   <div class="speed-control">
@@ -234,6 +234,7 @@ function checkAnswer() {
     speakZhuyin(current.zhuyin, current.char);
     document.getElementById("message").innerText = "🎉 正確！+10 金幣";
     document.getElementById("nextBtn").disabled = false;
+    document.getElementById("resetBtn").disabled = true;
     updateDisplay();
   } else {
     document.getElementById("wrongSound").play();
