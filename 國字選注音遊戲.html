@@ -240,6 +240,7 @@ function checkAnswer() {
     document.getElementById("message").innerText = "❌ 錯誤，再試一次！";
     // 錯誤時自動重播注音
     speakZhuyin(current.zhuyin, current.char);
+    reset();
   }
   localStorage.setItem('coins', coins);
 // 顯示正確注音並加上背景顏色
