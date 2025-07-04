@@ -229,7 +229,7 @@
         questionArea.innerHTML = '';
         if(currentStep >= totalSteps) {
           const selectedTime = parseInt(difficultySelect.value);
-          const reward = selectedTime === 60 ? 200 : selectedTime === 120 ? 70 : 30;
+          const reward = selectedTime === 60 ? 80 : selectedTime === 120 ? 30 : 20;
           coins += reward;
           localStorage.setItem('coins', coins);
           showCoinAnimation(reward);// 顯示金幣動畫

@@ -160,7 +160,7 @@ const questionsHigh = [
   { char: "夢", zhuyin: ["ㄇ", "ㄥˋ"] }, { char: "光", zhuyin: ["ㄍ", "ㄨㄤ"] }, { char: "影", zhuyin: ["ㄧ", "ㄥˇ"] }, { char: "聲", zhuyin: ["ㄕ", "ㄥ"] },
   { char: "色", zhuyin: ["ㄙ", "ㄜˋ"] }, { char: "形", zhuyin: ["ㄒ", "ㄧㄥˊ"] }, { char: "體", zhuyin: ["ㄊ", "ㄧˇ"] }, { char: "力", zhuyin: ["ㄌ", "ㄧˋ"] },
   { char: "氣", zhuyin: ["ㄑ", "ㄧˋ"] }, { char: "神", zhuyin: ["ㄕ", "ㄣˊ"] }, { char: "心", zhuyin: ["ㄒ", "ㄧㄣ"] }, { char: "情", zhuyin: ["ㄑ", "ㄧㄥˊ"] },
-  { char: "思", zhuyin: ["ㄙ", "ㄧ"] }, { char: "想", zhuyin: ["ㄒ", "ㄧㄤˇ"] }, { char: "知", zhuyin: ["ㄓ", "ㄧ"] }, { char: "識", zhuyin: ["ㄕ", "ㄧˋ"] },
+  { char: "想", zhuyin: ["ㄒ", "ㄧㄤˇ"] }, { char: "知", zhuyin: ["ㄓ", "ㄧ"] }, { char: "識", zhuyin: ["ㄕ", "ㄧˋ"] },
   { char: "學", zhuyin: ["ㄒ", "ㄩㄝˊ"] }, { char: "問", zhuyin: ["ㄨ", "ㄣˋ"] }, { char: "答", zhuyin: ["ㄉ", "ㄚˊ"] }, { char: "語", zhuyin: ["ㄩ", "ㄩˇ"] },
   { char: "文", zhuyin: ["ㄨ", "ㄣˊ"] }, { char: "字", zhuyin: ["ㄗ", "ㄧˋ"] }, { char: "書", zhuyin: ["ㄕ", "ㄨ"] }, { char: "畫", zhuyin: ["ㄏ", "ㄨㄚˋ"] },
   { char: "詩", zhuyin: ["ㄕ", "ㄧ"] }, { char: "歌", zhuyin: ["ㄍ", "ㄜ"] }, { char: "樂", zhuyin: ["ㄩ", "ㄝˋ"] }, { char: "舞", zhuyin: ["ㄨˇ"] },
@@ -184,6 +184,13 @@ speedSlider.addEventListener("input", () => {
   speedValue.innerText = speedSlider.value;
 });
 
+window.onload = () => {
+  // 初始化金幣顯示
+  coins = parseInt(localStorage.getItem('coins')) || 0;
+  updateDisplay();
+  renderQuestion();
+};
+
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
@@ -198,7 +205,7 @@ function updateDisplay() {
 function renderQuestion() {
   //重設按鈕 false
   document.getElementById("resetId").disabled = false;
-  
+
   const q = questions[Math.floor(Math.random() * questions.length)];
   current = q;
   selectedZhuyin = [];
