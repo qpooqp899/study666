@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>成語勇者 RPG</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #fffef7;
+      margin: 0;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin: 10px 0;
+    }
+
+    .battlefield {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .character {
+      text-align: center;
+      width: 40%;
+      position: relative;
+    }
+
+    .character .emoji {
+      font-size: 4rem;
+    }
+
+    .hp-bar {
+      height: 16px;
+      background: #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .bar {
+      height: 100%;
+      transition: width 0.3s;
+    }
+
+    .player-bar { background-color: #4caf50; }
+    .enemy-bar { background-color: #f44336; }
+
+    .effect {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      animation: fly 0.8s ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes fly {
+      0% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -60px); }
+    }
+
+    .meaning, .selected, .actions, .log {
+      text-align: center;
+      max-width: 500px;
+      margin: 10px auto;
+    }
+
+    .btn-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      background-color: #ffd966;
+    }
+
+    .selected-word {
+      font-size: 1.5em;
+      min-height: 30px;
+    }
+
+    .log {
+      background: #f0f0f0;
+      font-size: 0.9em;
+      border-radius: 8px;
+      padding: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 480px) {
+      .character .emoji { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>成語勇者 RPG</h1>
+
+  <div class="battlefield">
+    <div class="character" id="playerBox">
+      <div class="emoji">🧙‍♂️</div>
+      <div class="hp-bar"><div id="playerHP" class="bar player-bar"></div></div>
+      <div>Lv.<span id="level">1</span></div>
+    </div>
+    <div class="character" id="enemyBox">
+      <div class="emoji">👹</div>
+      <div class="hp-bar"><div id="enemyHP" class="bar enemy-bar"></div></div>
+      <div>怪物</div>
+    </div>
+  </div>
+
+  <div class="meaning" id="meaning" style="font-size: 2em;">載入中...</div>
+
+  <div class="btn-area" id="btnArea"></div>
+
+  <div class="selected">
+    <h3>你選擇的字：</h3>
+    <div id="selected" class="selected-word"></div>
+  </div>
+
+  <div class="actions">
+    <button onclick="submitAnswer()">✅ 確認送出</button>
+    <button onclick="resetSelection()">🔁 重選</button>
+  </div>
+
+  <div class="log" id="battleLog"></div>
+
+<script>
+
+
+let current = {};
+let selectedChars = [];
+let logBox = document.getElementById("battleLog");
+
+let player = JSON.parse(localStorage.getItem("playerData")) || {
+  level: 1,
+  exp: 0,
+  atk: 10,
+  maxHp: 100,
+  hp: 100,
+};
+
+let enemy = { hp: 100, maxHp: 100 };
+
+function updateUI() {
+  document.getElementById("level").textContent = player.level;
+  document.getElementById("playerHP").style.width = (player.hp / player.maxHp * 100) + "%";
+  document.getElementById("enemyHP").style.width = (enemy.hp / enemy.maxHp * 100) + "%";
+}
+
+function loadNewQuestion() {
+  selectedChars = [];
+  document.getElementById("selected").textContent = "";
+current = idioms[Math.floor(Math.random() * idioms.length)];
+  document.getElementById("meaning").textContent = "❓成語意思：" + current.meaning;
+
+  const btnArea = document.getElementById("btnArea");
+  btnArea.innerHTML = "";
+
+  let shuffled = current.options.slice().sort(() => Math.random() - 0.5);
+  shuffled.forEach(char => {
+    const btn = document.createElement("button");
+    btn.textContent = char;
+    btn.onclick = () => selectChar(char, btn);
+    btnArea.appendChild(btn);
+  });
+}
+
+function selectChar(char, btn) {
+  if (selectedChars.length >= 4) return;
+  selectedChars.push(char);
+  btn.disabled = true;
+  document.getElementById("selected").textContent = selectedChars.join("");
+}
+
+function resetSelection() {
+  selectedChars = [];
+  document.getElementById("selected").textContent = "";
+  document.querySelectorAll("#btnArea button").forEach(btn => btn.disabled = false);
+}
+
+function showEffect(targetBox, emoji) {
+  const effect = document.createElement("div");
+  effect.className = "effect";
+  effect.textContent = emoji;
+  targetBox.appendChild(effect);
+  setTimeout(() => effect.remove(), 800);
+}
+
+function log(message) {
+  const item = document.createElement("div");
+  item.textContent = message;
+  logBox.prepend(item);
+}
+
+function levelUp() {
+  const needExp = player.level * 10;
+  if (player.exp >= needExp) {
+    player.level++;
+    player.exp = 0;
+    player.maxHp += 20;
+    player.hp = player.maxHp;
+    player.atk += 5;
+    log(`🆙 升級！現在 Lv.${player.level}，攻擊力提升至 ${player.atk}`);
+  }
+}
+
+function savePlayer() {
+  localStorage.setItem("playerData", JSON.stringify(player));
+}
+
+function submitAnswer() {
+  if (selectedChars.length !== 4) {
+    log("⚠️ 請選滿四個字！");
+    return;
+  }
+
+  const answer = selectedChars.join("");
+  const playerBox = document.getElementById("playerBox");
+  const enemyBox = document.getElementById("enemyBox");
+
+  if (answer === current.idiom) {
+    showEffect(enemyBox, "⚡️");
+    setTimeout(() => {
+      enemy.hp -= player.atk;
+      log(`🧙‍♂️ 攻擊成功，造成 ${player.atk} 傷害！👹剩下 ${Math.max(enemy.hp, 0)} HP`);
+      if (enemy.hp <= 0) {
+        log("🎉 怪物被擊敗了！");
+        player.exp += 10;
+        levelUp();
+        enemy.hp = enemy.maxHp;
+      }
+      savePlayer();
+      updateUI();
+      loadNewQuestion();
+    }, 800);
+  } else {
+    showEffect(playerBox, "🔥");
+    setTimeout(() => {
+      player.hp -= 20;
+      log(`👹 反擊成功，造成 20 傷害！🧙‍♂️剩下 ${Math.max(player.hp, 0)} HP`);
+      if (player.hp <= 0) {
+        log("💀 玩家被擊敗，重新開始！");
+        player.level = 1;
+        player.exp = 0;
+        player.atk = 10;
+        player.maxHp = 100;
+        player.hp = 100;
+      }
+      savePlayer();
+      updateUI();
+      loadNewQuestion();
+    }, 800);
+  }
+}
+let idioms = [];
+window.onload = async () => {
+
+    try {
+    const res = await fetch("idioms.json");
+    idioms = await res.json();
+    updateUI();
+     loadNewQuestion(); // ✅ 資料載入後才呼叫隨機出題
+
+  } catch (err) {
+    alert("無法載入成語資料，請檢查 idioms.json 是否存在！");
+    console.error(err);
+  }
+};
+
+
+
+
+</script>
+
+</body>
+</html>
