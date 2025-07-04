@@ -109,7 +109,7 @@
   <div class="options" id="options"></div>
   <div class="controls">
     <button onclick="checkAnswer()">檢查 / 發音</button>
-    <button id="resetBtn" onclick="reset()">重設</button>
+    <button onclick="reset()">重設</button>
     <button id="nextBtn" onclick="nextQuestion()" disabled>下一題</button>
   </div>
   <div class="speed-control">
@@ -132,7 +132,7 @@ const questionsLow = [
   { char: "人", zhuyin: ["ㄖ", "ㄣˊ"] }, { char: "口", zhuyin: ["ㄎ", "ㄡˇ"] }, { char: "日", zhuyin: ["ㄖ", "ˋ"] }, { char: "月", zhuyin: ["ㄩ", "ㄝˋ"] },
   { char: "水", zhuyin: ["ㄕ", "ㄨㄟˇ"] }, { char: "火", zhuyin: ["ㄏ", "ㄨㄛˇ"] }, { char: "山", zhuyin: ["ㄕ", "ㄢ"] }, { char: "田", zhuyin: ["ㄊ", "ㄧㄢˊ"] },
   { char: "木", zhuyin: ["ㄇ", "ㄨˋ"] }, { char: "牛", zhuyin: ["ㄋ", "ㄧㄡˊ"] }, { char: "羊", zhuyin: ["ㄧ", "ㄤˊ"] }, { char: "馬", zhuyin: ["ㄇ", "ㄚˇ"] },
-   { char: "鳥", zhuyin: ["ㄋ", "ㄧㄠˇ"] }, { char: "狗", zhuyin: ["ㄍ", "ㄡˇ"] }, { char: "貓", zhuyin: ["ㄇ", "ㄠ"] },
+  { char: "魚", zhuyin: ["ㄩ", "ㄩˊ"] }, { char: "鳥", zhuyin: ["ㄋ", "ㄧㄠˇ"] }, { char: "狗", zhuyin: ["ㄍ", "ㄡˇ"] }, { char: "貓", zhuyin: ["ㄇ", "ㄠ"] },
   { char: "手", zhuyin: ["ㄕ", "ㄡˇ"] }, { char: "足", zhuyin: ["ㄗ", "ㄨˊ"] }, { char: "耳", zhuyin: ["ㄦˇ"] }, { char: "目", zhuyin: ["ㄇ", "ㄨˋ"] },
   { char: "鼻", zhuyin: ["ㄅ", "ㄧˊ"] }, { char: "口", zhuyin: ["ㄎ", "ㄡˇ"] }, { char: "頭", zhuyin: ["ㄊ", "ㄡˊ"] }, { char: "心", zhuyin: ["ㄒ", "ㄧㄣ"] },
   { char: "爸", zhuyin: ["ㄅ", "ㄚˋ"] }, { char: "媽", zhuyin: ["ㄇ", "ㄚ"] }, { char: "哥", zhuyin: ["ㄍ", "ㄜ"] }, { char: "姐", zhuyin: ["ㄐ", "ㄧㄝˇ"] },
@@ -150,7 +150,7 @@ const questionsMid = [
   { char: "叉", zhuyin: ["ㄔ", "ㄚ"] }, { char: "筷", zhuyin: ["ㄎ", "ㄨㄞˋ"] }, { char: "桌", zhuyin: ["ㄓ", "ㄨㄛ"] }, { char: "椅", zhuyin: ["ㄧˇ"] },
   { char: "窗", zhuyin: ["ㄔ", "ㄨㄤ"] }, { char: "門", zhuyin: ["ㄇ", "ㄣˊ"] }, { char: "牆", zhuyin: ["ㄑ", "ㄧㄤˊ"] }, { char: "地", zhuyin: ["ㄉ", "ㄧˋ"] },
   { char: "床", zhuyin: ["ㄔ", "ㄨㄤˊ"] }, { char: "燈", zhuyin: ["ㄉ", "ㄥ"] }, { char: "書", zhuyin: ["ㄕ", "ㄨ"] }, { char: "本", zhuyin: ["ㄅ", "ㄣˇ"] },
-  { char: "筆", zhuyin: ["ㄅ", "ㄧˇ"] },  { char: "畫", zhuyin: ["ㄏ", "ㄨㄚˋ"] }, { char: "圖", zhuyin: ["ㄊ", "ㄨˊ"] },
+  { char: "筆", zhuyin: ["ㄅ", "ㄧˇ"] }, { char: "紙", zhuyin: ["ㄓ", "ㄧˇ"] }, { char: "畫", zhuyin: ["ㄏ", "ㄨㄚˋ"] }, { char: "圖", zhuyin: ["ㄊ", "ㄨˊ"] },
   { char: "球", zhuyin: ["ㄑ", "ㄧㄡˊ"] }, { char: "跳", zhuyin: ["ㄊ", "ㄧㄠˋ"] }, { char: "跑", zhuyin: ["ㄆ", "ㄠˇ"] }, { char: "游", zhuyin: ["ㄧ", "ㄡˊ"] },
   { char: "唱", zhuyin: ["ㄔ", "ㄤˋ"] }, { char: "歌", zhuyin: ["ㄍ", "ㄜ"] }, { char: "舞", zhuyin: ["ㄨˇ"] }, { char: "樂", zhuyin: ["ㄩ", "ㄝˋ"] }
 ];
@@ -190,13 +190,12 @@ function shuffle(array) {
 
 function updateDisplay() {
   document.getElementById("scoreBoard").innerText = "🏆 得分：" + score;
-  document.getElementById("coinDisplay").innerText = "🪙 金幣：" + coins;
-  localStorage.setItem('coins', coins); // 每次顯示時都同步儲存
+  document.getElementById("coinDisplay").innerText = "💰 金幣：" + coins;
+    localStorage.setItem('coins', coins); // 每次顯示時都同步儲存
+
 }
 
 function renderQuestion() {
-      document.getElementById("resetBtn").disabled = false;
-
   const q = questions[Math.floor(Math.random() * questions.length)];
   current = q;
   selectedZhuyin = [];
@@ -237,7 +236,6 @@ function checkAnswer() {
     speakZhuyin(current.zhuyin, current.char);
     document.getElementById("message").innerText = "🎉 正確！+10 金幣";
     document.getElementById("nextBtn").disabled = false;
-    document.getElementById("resetBtn").disabled = true;
     updateDisplay();
   } else {
     document.getElementById("wrongSound").play();
@@ -247,6 +245,21 @@ function checkAnswer() {
     reset();
   }
   localStorage.setItem('coins', coins);
+// 顯示正確注音並加上背景顏色
+function showCorrectZhuyin(zhuyinArr) {
+  const selectedDiv = document.getElementById("selected");
+  selectedDiv.innerHTML = "選擇注音：";
+  zhuyinArr.forEach(z => {
+    const span = document.createElement("span");
+    span.innerText = z;
+    span.style.margin = "0 5px";
+    span.style.background = "#ffe066";
+    span.style.borderRadius = "6px";
+    span.style.padding = "2px 8px";
+    span.style.color = "#222";
+    selectedDiv.appendChild(span);
+  });
+}
 }
 
 function reset() {
@@ -256,7 +269,6 @@ function reset() {
 }
 
 function nextQuestion() {
-
   renderQuestion();
 }
 
