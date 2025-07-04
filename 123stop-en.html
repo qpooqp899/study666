@@ -210,6 +210,7 @@
       btn.onclick = () => {
         totalCount++;
         if(opt === correct) {
+           speak(correct);  // 播放英文單字
           correctCount++;
           coins += 5; // 【答對即 +5 金幣】
           showCoinAnimation(5);// 顯示金幣動畫
@@ -335,6 +336,13 @@ function showCoinAnimation(amount) {
   }, 1050);
 }
 
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';  // 英文發音
+    window.speechSynthesis.speak(utterance);
+  }
+}
 
 
 </script>
