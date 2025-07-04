@@ -403,7 +403,8 @@ function displayShuffled() {
     btn.onclick = () => {
       clickSound.currentTime = 0;
       clickSound.play();
-      speakLetter(letter); // 點字母時發音
+
+      // speakLetter(letter); // 點字母時發音
       selected += letter;
       document.getElementById("answer").textContent = selected;
       btn.disabled = true;
