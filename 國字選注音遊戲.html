@@ -109,8 +109,8 @@
   <div class="options" id="options"></div>
   <div class="controls">
     <button onclick="checkAnswer()">檢查 / 發音</button>
-    <button onclick="reset()">重設</button>
-    <button id="nextBtn" onclick="nextQuestion()" disabled>下一題</button>
+    <button id="resetId" onclick="reset()">重設</button>
+    <button id="nextBtn" onclick="nextQuestion()" >下一題</button>
   </div>
   <div class="speed-control">
     發音速度：<input type="range" id="speedSlider" min="0.1" max="2" value="0.5" step="0.1"> <span id="speedValue">0.5</span>x
@@ -196,6 +196,9 @@ function updateDisplay() {
 }
 
 function renderQuestion() {
+  //重設按鈕 false
+  document.getElementById("resetId").disabled = false;
+  
   const q = questions[Math.floor(Math.random() * questions.length)];
   current = q;
   selectedZhuyin = [];
@@ -221,7 +224,7 @@ function renderQuestion() {
     };
     container.appendChild(btn);
   });
-  document.getElementById("nextBtn").disabled = true;
+  // document.getElementById("nextBtn").disabled = true;
 }
 
 function checkAnswer() {
@@ -236,6 +239,8 @@ function checkAnswer() {
     speakZhuyin(current.zhuyin, current.char);
     document.getElementById("message").innerText = "🎉 正確！+10 金幣";
     document.getElementById("nextBtn").disabled = false;
+    //重設按鈕反灰
+    document.getElementById("resetId").disabled = true;
     updateDisplay();
   } else {
     document.getElementById("wrongSound").play();
