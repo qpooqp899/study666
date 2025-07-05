@@ -92,11 +92,18 @@
     <input type="range" id="rateSlider" min="0.1" max="1.5" step="0.1" value="0.5" /> 
     <span id="rateValue">0.5</span>
   </div>
+<div style="font-size:20px; margin: 10px;">
+  💰 金幣：<span id="coinDisplay">0</span>
+</div>
+
+<button class="action" onclick="showHint()">💡 顯示答案（-50 金幣）</button>
 
   <script>
     document.getElementById("rateSlider").addEventListener("input", function() {
       document.getElementById("rateValue").innerText = this.value;
     }); 
+
+
 
     const sentences = [
       { words: ["I", "eat", "apple"], options: ["I", "eat", "apple", "banana", "He"], ch: "我吃蘋果" },
@@ -138,6 +145,10 @@
     function jumpToQuestion() {
       currentIndex = parseInt(questionSelect.value, 10);
       isCorrect = false;
+
+
+
+
       loadSentence(currentIndex);
       document.getElementById("nextBtn").style.display = "none";
     }
@@ -156,8 +167,10 @@
         speakSentence(sentence.join(" "));
         document.getElementById("nextBtn").style.display = "inline-block";
         isCorrect = true;
+          changeCoins(10); // 🎉 答對加金幣
       } else {
         output.innerHTML += ' ❌ 錯誤，再試一次！';
+        changeCoins(-10); // ❌ 答錯扣金幣
       }
     }
 
@@ -167,9 +180,33 @@
         currentIndex = 0;
       }
       isCorrect = false;
+
+updateCoinDisplay();
+
       loadSentence(currentIndex);
       document.getElementById("nextBtn").style.display = "none";
     }
+
+
+    function updateCoinDisplay() {
+        let coins = parseInt(localStorage.getItem('coins')) || 0; // 預設100金幣
+
+  document.getElementById("coinDisplay").innerText = coins;
+  localStorage.setItem("coins", coins);
+
+}
+
+function changeCoins(amount) {
+  let coins = parseInt(localStorage.getItem('coins')) || 0; // 預設100金幣
+
+  coins += amount;
+  if (coins < 0) coins = 0; // 不允許負金幣
+
+  // 更新金幣顯示
+  localStorage.setItem('coins', coins);
+
+  updateCoinDisplay();
+}
 
     function loadSentence(index) {
       sentence = [];
@@ -212,6 +249,29 @@
       msg.rate = document.getElementById("rateSlider") ? parseFloat(document.getElementById("rateSlider").value) : 0.8;
       window.speechSynthesis.speak(msg);
     }
+
+        //提示
+    function showHint() {
+        let coins = parseInt(localStorage.getItem('coins')) || 0; // 預設100金幣
+
+  if (coins < 50) {
+    alert("金幣不足，無法顯示提示！");
+    return;
+  }
+
+  const correct = sentences[currentIndex].words.join(" ");
+  document.getElementById("sentenceOutput").innerHTML = `<span style="color:#999;">提示：${correct}</span>`;
+  
+  changeCoins(-50); // 💸 提示扣金幣
+}
+
+// window.onload = function() {
+  // 初始化金幣顯示 
+window.onload = function() {
+  let coins = parseInt(localStorage.getItem('coins')) || 0; // 預設100金幣
+  document.getElementById("coinDisplay").innerText = coins;
+  localStorage.setItem("coins", coins); 
+};
 
     loadSentence(currentIndex);
   </script>
