@@ -159,14 +159,16 @@
     }
 
     function checkSentence() {
+
       const output = document.getElementById("sentenceOutput");
       const correct = sentences[currentIndex].words;
       if (JSON.stringify(sentence) === JSON.stringify(correct)) {
         output.innerHTML = `<span class="success">🎉 正確！</span><br>
           <span style="font-size:22px;">${correct.join(" ")}<br>👉 ${sentences[currentIndex].ch}</span>`;
-        speakSentence(sentence.join(" "));
+        speakSentence(sentence.join(" ")); // 發音正確的句子   
+         if (isCorrect) return;
         document.getElementById("nextBtn").style.display = "inline-block";
-        isCorrect = true;
+     isCorrect = true; // ✅ 設定狀態，表示已答對
           changeCoins(10); // 🎉 答對加金幣
       } else {
         output.innerHTML += ' ❌ 錯誤，再試一次！';
