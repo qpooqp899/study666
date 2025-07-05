@@ -172,7 +172,6 @@
     }
     /* 提示按鈕樣式 */
     #hintBtn {
-      display: none;
       margin-top: 10px;
       font-size: 18px;
       padding: 10px 24px;
@@ -225,13 +224,17 @@
     <option value="theme-rainbow">彩虹</option>
   </select>
   <h1>英文拼字遊戲</h1>
+  <div id="coinDisplay" style="font-size:22px;color:#8400db;font-weight:bold;margin-bottom:10px;">
+  💰金幣：0
+</div>
+
   <div id="meaning"></div>
   <div id="shuffled"></div>
   <div id="answer"></div>
   <div>
     <button onclick="resetGame()">重玩</button>
     <button onclick="nextWord()">下一題</button>
-    <button id="hintBtn" onclick="showHint()">提示</button>
+    <button id="hintBtn" onclick="showHint()">提示 -50金幣</button>
   </div>
   <div style="margin:10px 0;">
     <button id="replayWordBtn" style="display:none;font-size:18px;padding:8px 18px;">🔊 重新發音</button>
@@ -368,6 +371,22 @@ const correctSound = document.getElementById("correctSound");
 const wrongSound = document.getElementById("wrongSound");
 const bgm = document.getElementById("bgm");
 
+// 金幣邏輯
+let coins = localStorage.getItem("coins") ? parseInt(localStorage.getItem("coins")) : 100;
+updateCoinDisplay();
+
+function updateCoins(change) {
+  coins += change;
+  if (coins < 0) coins = 0; // 不讓金幣變負數
+  localStorage.setItem("coins", coins);
+  updateCoinDisplay();
+}
+
+function updateCoinDisplay() {
+  document.getElementById("coinDisplay").textContent = `💰 金幣：${coins}`;
+}
+
+
 // 音量控制
 const bgmVolume = document.getElementById("bgmVolume");
 const sfxVolume = document.getElementById("sfxVolume");
@@ -457,9 +476,9 @@ function checkAnswer() {
     result.style.color = "green";
     correctSound.currentTime = 0;
     correctSound.play();
-    document.getElementById("hintBtn").style.display = "none";
     document.getElementById("replayWordBtn").style.display = "inline-block";
     speakWord(); // 正確後完整單字發音
+       updateCoins(+10); // ✅ 答對加金幣
     wrongCount = 0;
   } else {
     result.textContent = "❌ 錯誤，請再試一次！";
@@ -468,9 +487,8 @@ function checkAnswer() {
     wrongSound.play();
     document.getElementById("replayWordBtn").style.display = "none";
     wrongCount++;
-    if (wrongCount >= 3) {
-      document.getElementById("hintBtn").style.display = "inline-block";
-    }
+        updateCoins(-10); // ❌ 答錯扣金幣
+
   }
 }
 
@@ -479,7 +497,6 @@ function resetGame() {
   selected = "";
   document.getElementById("answer").textContent = "";
   document.getElementById("result").textContent = "";
-  document.getElementById("hintBtn").style.display = "none";
   document.getElementById("replayWordBtn").style.display = "none";
   displayShuffled();
 }
@@ -494,6 +511,11 @@ function nextWord() {
 }
 
 function showHint() {
+  if (coins < 50) {
+  alert("金幣不足，無法使用提示！");
+  return;
+}
+  updateCoins(-50); // 🔍 提示扣金幣
   document.getElementById("result").textContent = `提示：${currentWord}`;
   document.getElementById("result").style.color = "#1976d2";
 }
