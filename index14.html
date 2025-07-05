@@ -366,10 +366,13 @@ let currentWord = "";
 let currentMeaning = "";
 let selected = "";
 
+let isCorrect = false; // ✅ 設定狀態
+
 const clickSound = document.getElementById("clickSound");
 const correctSound = document.getElementById("correctSound");
 const wrongSound = document.getElementById("wrongSound");
 const bgm = document.getElementById("bgm");
+
 
 // 金幣邏輯
 let coins = localStorage.getItem("coins") ? parseInt(localStorage.getItem("coins")) : 100;
@@ -478,15 +481,17 @@ function checkAnswer() {
     correctSound.play();
     document.getElementById("replayWordBtn").style.display = "inline-block";
     speakWord(); // 正確後完整單字發音
+     if (isCorrect) return; // 如果已經答對就不再執行
+         isCorrect = true; // ✅ 設定狀態，表示已答對
        updateCoins(+10); // ✅ 答對加金幣
-    wrongCount = 0;
+  
   } else {
     result.textContent = "❌ 錯誤，請再試一次！";
     result.style.color = "red";
     wrongSound.currentTime = 0;
     wrongSound.play();
     document.getElementById("replayWordBtn").style.display = "none";
-    wrongCount++;
+    
         updateCoins(-10); // ❌ 答錯扣金幣
 
   }
