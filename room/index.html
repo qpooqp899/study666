@@ -126,22 +126,37 @@
       #roomArea { height: 300px; }
       .furniture { font-size: 28px; }
     }
-    #store {
-  display: flex;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding: 10px;
-  gap: 10px;
-}
-.item {
-  flex: 0 0 auto; /* 避免 item 被壓縮 */
-  width: 80px;
-  height: 80px;
-  text-align: center;
-  background: #f0f0f0;
-  border-radius: 10px;
-  padding: 5px;
-}
+  #store {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 10px 0;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+    }
+
+    .item {
+      flex: 0 0 auto;
+      width: 120px;
+      height: 120px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      scroll-snap-align: start;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s;
+    }
+
+    .item:hover {
+      transform: scale(1.05);
+    }
+
 
   </style>
 </head>
@@ -243,9 +258,9 @@
 
     function loadStore() {
 const items = [
-  { name: "沙發", price: 500, icon: "🛋️" },
-  { name: "桌子", price: 500, icon: "🪑" },
-  { name: "床", price: 500, icon: "🛏️" },
+  { name: "沙發", price: 200, icon: "🛋️" },
+  { name: "桌子", price: 200, icon: "🪑" },
+  { name: "床", price: 200, icon: "🛏️" },
   { name: "電視", price: 500, icon: "📺" },
   { name: "冰箱", price: 500, icon: "🧊" },
   { name: "電腦", price: 500, icon: "💻" },
@@ -265,7 +280,48 @@ const items = [
   { name: "貓", price: 1500, icon: "🐈" },
    { name: "豬", price: 1500, icon: "🐖" }
 ];
-      store.innerHTML = '';
+
+// const items = [
+//   { name: "沙發", price: 0, icon: "🛋️" },
+//   { name: "桌子", price: 0, icon: "🪑" },
+//   { name: "床", price: 0, icon: "🛏️" },
+//   { name: "電視", price: 0, icon: "📺" },
+//   { name: "冰箱", price: 0, icon: "🧊" },
+//   { name: "電腦", price: 0, icon: "💻" },
+//   { name: "衣櫃", price: 0, icon: "🚪" },
+//   { name: "書櫃", price: 0, icon: "📚" },
+//   { name: "燈", price: 0, icon: "💡" },
+//   { name: "地毯", price: 0, icon: "🧶" },
+//   { name: "馬桶", price: 500, icon: "🚽" },
+//   { name: "洗手台", price: 500, icon: "🚰" },
+//   { name: "浴缸", price: 500, icon: "🛁" },
+//   { name: "廚房爐具", price: 500, icon: "🍳" },
+//   { name: "微波爐", price: 500, icon: "🔌" },
+//   { name: "空氣清淨機", price: 500, icon: "🌬️" },
+//   { name: "畫作", price: 500, icon: "🖼️" },
+//   { name: "時鐘", price: 500, icon: "🕰️" },
+//   { name: "音響", price: 500, icon: "🔊" },
+//   { name: "貓", price: 1500, icon: "🐈" },
+//    { name: "豬", price: 1500, icon: "🐖" }
+// ];
+    //   store.innerHTML = '';
+    //   items.forEach(item => {
+    //     const div = document.createElement("div");
+    //     div.className = "item";
+    //     div.innerHTML = `${item.icon}<br>$${item.price}`;
+    //     div.onclick = () => {
+    //       if (coins >= item.price) {
+    //         updateCoins(-item.price);
+    //         inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
+    //         inventory[item.name].quantity++;
+    //         localStorage.setItem("inventory", JSON.stringify(inventory));
+    //         loadInventory();
+    //       } else alert("金幣不足");
+    //     };
+    //     store.appendChild(div);
+    //   });
+
+     store.innerHTML = '';
       items.forEach(item => {
         const div = document.createElement("div");
         div.className = "item";
@@ -276,12 +332,16 @@ const items = [
             inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
             inventory[item.name].quantity++;
             localStorage.setItem("inventory", JSON.stringify(inventory));
-            loadInventory();
-          } else alert("金幣不足");
+           
+          } else {
+            alert("金幣不足！");
+          }
         };
         store.appendChild(div);
       });
     }
+
+
 
     function loadInventory() {
       inventoryEl.innerHTML = '';
@@ -322,10 +382,10 @@ const items = [
       makeFurnitureInteractive(div);
       roomArea.appendChild(div);
       
-              if (item.quantit > 1) {
-    item.quantity--;
+             
+                 item.quantity--;
 
-    }
+   
 
     //   if (item.quantity <= 0) delete inventory[name];
 
@@ -343,6 +403,7 @@ localStorage.setItem("inventory", JSON.stringify(inventory));
   localStorage.setItem("roomData", JSON.stringify(roomData));
 
   loadInventory();
+   
 
     }
 
@@ -590,18 +651,23 @@ inventoryEl.addEventListener("click", e => {
   if (target) {
     const name = target.dataset.name;
     const icon = inventory[name].icon;
-    createFurniture(icon, name);
-        if (inventory[name].quantity > 1) {
+
+
+            if (inventory[name].quantity <= 0) {
+     return;
+    }
+
+
+        if (inventory[name].quantity >= 1) {
+                createFurniture(icon, name);
      inventory[name].quantity--;
-    }
+    
  
-    if (inventory[name].quantity <= 0) {
-    //   delete inventory[name];
-    }
 
       
     localStorage.setItem("inventory", JSON.stringify(inventory));
     loadInventory();
+    }
   }
 });
 
