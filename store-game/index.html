@@ -85,7 +85,7 @@
 </style>
 </head>
 <body>
-            <a href="index.html" style="position:absolute;left:10px;top:10px;font-size:24px;text-decoration:none;background:#eee;padding:6px 18px;border-radius:8px;color:#222;box-shadow:0 2px 6px #ccc;">← 返回選單</a>
+            <a href="../index.html" style="position:absolute;left:10px;top:10px;font-size:24px;text-decoration:none;background:#eee;padding:6px 18px;border-radius:8px;color:#222;box-shadow:0 2px 6px #ccc;">← 返回選單</a>
 
 <h1>便利商店小老闆</h1>
 
@@ -218,7 +218,9 @@ function updateStockDisplay() {
     const div = document.createElement('div');
 
     const btnSell = document.createElement('button');
-    btnSell.textContent = `● 賣出 ${p.name} (${p.stock})`;
+    // btnSell.textContent = `● 賣出 ${p.name} (${p.stock})`;
+        btnSell.textContent = `● 賣出 ${p.name} `;
+
     // btnSell.disabled = p.stock <= 0;
     btnSell.onclick = () => sellProduct(p.name);
 
