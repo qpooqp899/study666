@@ -503,6 +503,8 @@ function resetGame() {
   document.getElementById("answer").textContent = "";
   document.getElementById("result").textContent = "";
   document.getElementById("replayWordBtn").style.display = "none";
+           isCorrect = false; // ✅ 重置狀態
+
   displayShuffled();
 }
 
