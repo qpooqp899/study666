@@ -232,7 +232,7 @@
   <div id="shuffled"></div>
   <div id="answer"></div>
   <div>
-    <button onclick="resetGame()">重玩</button>
+    <button id="resetGame" onclick="resetGame()">重玩</button>
     <button onclick="nextWord()">下一題</button>
     <button id="hintBtn" onclick="showHint()">提示 -50金幣</button>
   </div>
@@ -478,12 +478,17 @@ function checkAnswer() {
     result.textContent = "✅ 正確！ +20 💰金幣";
     result.style.color = "green";
     correctSound.currentTime = 0;
+
     correctSound.play();
     document.getElementById("replayWordBtn").style.display = "inline-block";
     speakWord(); // 正確後完整單字發音
      if (isCorrect) return; // 如果已經答對就不再執行
          isCorrect = true; // ✅ 設定狀態，表示已答對
        updateCoins(+20); // ✅ 答對加金幣
+    
+document.getElementById("resetGame").style.display = "none"; // 隱藏重玩按鈕
+
+    
   
   } else {
     result.textContent = "❌ 錯誤，請再試一次！";
@@ -503,8 +508,9 @@ function resetGame() {
   document.getElementById("answer").textContent = "";
   document.getElementById("result").textContent = "";
   document.getElementById("replayWordBtn").style.display = "none";
-           isCorrect = false; // ✅ 重置狀態
-
+      isCorrect = false; // ✅ 重置狀態
+document.getElementById("resetGame").style.display = ""; // 顯示重玩按鈕
+  
   displayShuffled();
 }
 
