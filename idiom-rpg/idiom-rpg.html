@@ -98,7 +98,7 @@
     }
 
     .selected-word {
-      font-size: 1.5em;
+      font-size: 2.5em;
       min-height: 30px;
     }
 
@@ -137,7 +137,7 @@
   }
 
   .selected-word {
-    font-size: 1.2em;
+    font-size: 2.5em;
   }
 
   .meaning {
@@ -281,7 +281,7 @@ const enemyList = [
     <div id="selected" class="selected-word"></div>
   </div>
 <div class="actions">
-  ⏳ 時間：<span id="timer">20</span> 秒
+  ⏳ 時間：<span id="timer">60</span> 秒
   <br />
   <div class="actions">
     
@@ -339,12 +339,12 @@ let enemy = JSON.parse(localStorage.getItem("enemyData")) || {
   atk: 20,
 };
 
-let timer = 20;
+let timer = 60;
 let timerInterval;
 
 function startTimer() {
   clearInterval(timerInterval);
-  timer = 20;
+  timer = 60;
   document.getElementById("timer").textContent = timer;
   timerInterval = setInterval(() => {
     timer--;
