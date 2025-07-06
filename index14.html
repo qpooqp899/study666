@@ -475,7 +475,7 @@ document.getElementById("replayWordBtn").onclick = speakWord;
 function checkAnswer() {
   const result = document.getElementById("result");
   if (selected === currentWord) {
-    result.textContent = "✅ 正確！";
+    result.textContent = "✅ 正確！ +20 💰金幣";
     result.style.color = "green";
     correctSound.currentTime = 0;
     correctSound.play();
@@ -483,7 +483,7 @@ function checkAnswer() {
     speakWord(); // 正確後完整單字發音
      if (isCorrect) return; // 如果已經答對就不再執行
          isCorrect = true; // ✅ 設定狀態，表示已答對
-       updateCoins(+10); // ✅ 答對加金幣
+       updateCoins(+20); // ✅ 答對加金幣
   
   } else {
     result.textContent = "❌ 錯誤，請再試一次！";
