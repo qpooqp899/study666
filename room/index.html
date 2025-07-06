@@ -291,6 +291,7 @@
   <div>🪑 <span id="menuItemName"></span></div>
   <button id="moveBtn" onclick="startMove()">移動</button>
   <button onclick="rotateFurniture()">旋轉</button>
+  <button onclick="flipFurniture()">水平翻轉</button>
   <input type="range" min="0.5" max="2" step="0.1" value="2" oninput="setFurnitureScale(this.value)">
   <button id="lockBtn" onclick="toggleLockFurniture()">鎖定/解鎖</button>
   <button style="background:#f55;color:#fff" onclick="confirmDeleteFurniture()">刪除</button>
@@ -555,7 +556,10 @@ store.appendChild(table);
       div.dataset.scale = "2"; // 預設縮放
       div.dataset.rotate = 0;
       div.dataset.locked = "false";
+      div.dataset.flip = "1"; // 新增這行
+      
       div.style.transform = `scale(2) rotate(0deg)`; //畫面家具預設放大2倍
+
       makeFurnitureInteractive(div);
       roomArea.appendChild(div);
       
@@ -575,7 +579,9 @@ localStorage.setItem("inventory", JSON.stringify(inventory));
     y: e.offsetY,
     scale: "2",
     rotate: 0,
-    locked: false
+    locked: false,
+    flip: "1" // 確保有 flip 屬性
+
   });
   localStorage.setItem("roomData", JSON.stringify(roomData));
 
@@ -637,6 +643,7 @@ if (div.dataset.locked !== "true") {
         y: parseInt(div.style.top),
         scale: parseFloat(div.dataset.scale),
         rotate: parseInt(div.dataset.rotate),
+          flip: parseInt(div.dataset.flip),   // ✅ 加上這行！水平
         locked: div.dataset.locked === "true",
       }));
       roomData[currentRoom] = data;
@@ -651,14 +658,18 @@ if (div.dataset.locked !== "true") {
 div.textContent = f.icon || inventory[f.name]?.icon || f.name;
 
 
-
+        
         div.style.left = `${f.x}px`;
         div.style.top = `${f.y}px`;
         div.dataset.name = f.name;
         div.dataset.scale = f.scale;
         div.dataset.rotate = f.rotate;
         div.dataset.locked = f.locked;
+        div.dataset.flip = f.flip || "1"; // 確保有 flip 屬性
         div.style.transform = `scale(${f.scale}) rotate(${f.rotate}deg)`;
+
+        // ✅ 正確套用 flip / scale / rotate 組合
+    applyFurnitureTransform(div);
         makeFurnitureInteractive(div);
         roomArea.appendChild(div);
       });
@@ -706,12 +717,39 @@ div.textContent = f.icon || inventory[f.name]?.icon || f.name;
     }
 
     function rotateFurniture() {
-      if (!selectedFurniture || selectedFurniture.dataset.locked === "true") return;
-      let rot = (parseInt(selectedFurniture.dataset.rotate) + 45) % 360;
-      selectedFurniture.dataset.rotate = rot;
-      selectedFurniture.style.transform = `scale(${selectedFurniture.dataset.scale}) rotate(${rot}deg)`;
-      updateRoomDataFromDOM();
+  if (!selectedFurniture || selectedFurniture.dataset.locked === "true") return;
+
+  let rot = (parseInt(selectedFurniture.dataset.rotate) + 45) % 360;
+  selectedFurniture.dataset.rotate = rot;
+
+  applyFurnitureTransform(selectedFurniture); // ← 用統一的方法套 transform
+  updateRoomDataFromDOM();
     }
+
+    //水平翻轉
+    function flipFurniture() {
+   if (!selectedFurniture || selectedFurniture.dataset.locked === "true") return;
+
+  const flip = selectedFurniture.dataset.flip === "-1" ? "1" : "-1";
+  selectedFurniture.dataset.flip = flip;
+
+  applyFurnitureTransform(selectedFurniture);
+  updateRoomDataFromDOM();
+}
+
+function applyFurnitureTransform(furniture) {
+  const scale = parseFloat(furniture.dataset.scale) || 1;
+  const rotate = parseInt(furniture.dataset.rotate) || 0;
+  const flip = parseInt(furniture.dataset.flip) || 1;
+
+  // 如果翻轉，x軸為 -1；否則為 1
+  const flipScaleX = flip * scale;
+
+  // 套用 transform：scaleX、scaleY、rotate
+  furniture.style.transform = `scale(${flipScaleX}, ${scale}) rotate(${rotate}deg)`;
+}
+
+
 
     function scaleFurniture(increase) {
       if (!selectedFurniture || selectedFurniture.dataset.locked === "true") return;
@@ -821,7 +859,8 @@ window.addEventListener('DOMContentLoaded', () => {
   div.dataset.scale = "2";
   div.dataset.rotate = "0";
   div.dataset.locked = "false";
-
+  div.dataset.flip = "1"; // 新增這行
+applyFurnitureTransform(div); // 預設放大2倍
   makeFurnitureInteractive(div);
   roomArea.appendChild(div);
 
@@ -834,7 +873,9 @@ window.addEventListener('DOMContentLoaded', () => {
   y: y,
   scale: 2,
   rotate: 0,
-  locked: false
+  locked: false,
+    flip: 1 // ✅ 加上這行，才會記得鏡像狀態
+
   });
   localStorage.setItem("roomData", JSON.stringify(roomData));
 }
