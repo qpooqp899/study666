@@ -235,7 +235,7 @@ const enemyList = [
     playerList.forEach((p,i)=>{
       html += `<li style="padding:6px 0;display:flex;align-items:center;gap:12px;">
       <span style="font-size:2em;">${p.playicon}</span>
-      <span>Lv.${i === 0 ? 1 : (i * 5)} - ${p.name}</span>
+      <span>Lv.${i === 0 ? 1 : (i)} - ${p.name}</span>
       </li>`;
     });
     html += '</ul>';
