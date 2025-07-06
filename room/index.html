@@ -306,12 +306,80 @@
     <button onclick="closeConfirm()">取消</button>
   </div>
 </div>
-  <h3>商城</h3>
+<div style="display: flex; align-items: center; gap: 10px;">
+  <h3 style="margin: 0;">🏠 商城</h3>
+  <label for="categorySelect">篩選分類：</label>
+  <select id="categorySelect">
+   <option value="全部">全部</option>
+    <option value="家俱">家俱</option>
+    <option value="家電">家電</option>
+    <option value="裝飾">裝飾</option>
+    <option value="人物">人物</option>
+    <option value="寵物">寵物</option>
+    <option value="廚房">廚房</option>
+    <option value="衛浴">衛浴</option>
+    <option value="其他">其他</option>
+  </select>
+</div>
 <div id="store"></div>
-  <h3>已購清單</h3>
+<div style="display: flex; align-items: center; gap: 10px;">
+  <h3 style="margin: 0;">👜 已購清單</h3>
+  <label for="inventoryFilter">分類：</label>
+  <select id="inventoryFilter">
+      <option value="全部">全部</option>
+    <option value="家俱">家俱</option>
+    <option value="家電">家電</option>
+    <option value="裝飾">裝飾</option>
+    <option value="人物">人物</option>
+    <option value="寵物">寵物</option>
+    <option value="廚房">廚房</option>
+    <option value="衛浴">衛浴</option>
+    <option value="其他">其他</option>
+  </select>
+</div>
   <div id="inventory"></div>
 
   <script>
+
+const items = [
+  { name: "沙發", price: 200, icon: "🛋️" ,category: "家俱"},
+  { name: "桌子", price: 200, icon: "🪑" ,category: "家俱"},
+  { name: "床", price: 200, icon: "🛏️" ,category: "家俱"},
+  { name: "隔板-", price: 50, icon: " ➖" ,category: "裝飾"},
+  { name: "隔板+", price: 50, icon: " ➕" ,category: "裝飾"},
+  { name: "愛心", price: 50, icon: "❤️" ,category: "裝飾"},
+  { name: "貓", price: 1500, icon: "🐈" ,category: "寵物"},
+  { name: "小寶寶", price: 150, icon: "👶" ,category: "人物"},
+  { name: "女孩", price: 150, icon: "👧" ,category: "人物"},
+  { name: "男孩", price: 150, icon: "👦" ,category: "人物"},
+  { name: "大人", price: 150, icon: "🧑" ,category: "人物"},
+  { name: "女人", price: 150, icon: "👩" ,category: "人物"},
+    { name:"時鐘",price :150,icon:"⏰", category:"裝飾"},
+  { name: "餐桌", price: 500, icon: "🍽️" ,category: "家俱"},
+  { name: "收納櫃", price: 600, icon: "🗄️" ,category: "家俱"},  
+  { name: "電風扇", price: 300, icon: "🌀" ,category: "家電"},
+  { name: "空調", price: 800, icon: "❄️" ,category: "家電"},
+  { name: "電暖器", price: 800, icon: "🔥" ,category: "家電"},
+    { name: "電視", price: 500, icon: "📺" ,category: "家電"},
+    { name: "冰箱", price: 500, icon: "🧊" ,category: "家電"},
+    { name: "電腦", price: 500, icon: "💻" ,category: "家電"},
+    { name: "衣櫃", price: 500, icon: "🚪" ,category: "家俱"},
+    { name: "書櫃", price: 500, icon: "📚" ,category: "家俱"},
+    { name: "燈", price: 500, icon: "💡" ,category: "家電"},
+    { name: "地毯", price: 500, icon: "🧶" ,category: "裝飾"},
+    { name: "馬桶", price: 500, icon: "🚽" ,category: "衛浴"},
+    { name: "洗手台", price: 500, icon: "🚰" ,category: "衛浴"},
+    { name: "浴缸", price: 500, icon: "🛁" ,category: "衛浴"},
+    { name:"廚房爐具",price :500,icon:"🍳", category:"廚房"},
+    { name:"微波爐",price :500,icon:"🔌", category:"廚房"},
+    { name:"空氣清淨機",price :500,icon:"🌬️", category:"家電"},
+    { name:"畫作",price :500,icon:"🖼️", category:"裝飾"},
+    { name:"時鐘",price :500,icon:"🕰️", category:"裝飾"},
+    { name:"音響",price :500,icon:"🔊", category:"家電"},
+    { name: "豬", price: 1500, icon: "🐖" ,category: "寵物"}
+
+];
+
     let coins = parseInt(localStorage.getItem('coins')) || 0;
     localStorage.setItem('coins', coins);
     let unlockedRooms = JSON.parse(localStorage.getItem('unlockedRooms')) || [1];
@@ -366,54 +434,47 @@
     }
 
     function loadStore() {
-const items = [
-  { name: "沙發", price: 200, icon: "🛋️" },
-  { name: "桌子", price: 200, icon: "🪑" },
-  { name: "床", price: 200, icon: "🛏️" },
-    { name: "貓", price: 1500, icon: "🐈" },
-  { name: "電視", price: 500, icon: "📺" },
-  { name: "冰箱", price: 500, icon: "🧊" },
-  { name: "電腦", price: 500, icon: "💻" },
-  { name: "衣櫃", price: 500, icon: "🚪" },
-  { name: "書櫃", price: 500, icon: "📚" },
-  { name: "燈", price: 500, icon: "💡" },
-  { name: "地毯", price: 500, icon: "🧶" },
-  { name: "馬桶", price: 500, icon: "🚽" },
-  { name: "洗手台", price: 500, icon: "🚰" },
-  { name: "浴缸", price: 500, icon: "🛁" },
-  { name: "廚房爐具", price: 500, icon: "🍳" },
-  { name: "微波爐", price: 500, icon: "🔌" },
-  { name: "空氣清淨機", price: 500, icon: "🌬️" },
-  { name: "畫作", price: 500, icon: "🖼️" },
-  { name: "時鐘", price: 500, icon: "🕰️" },
-  { name: "音響", price: 500, icon: "🔊" },
-   { name: "豬", price: 1500, icon: "🐖" }
-];
-
-
 // const items = [
-//   { name: "沙發", price: 0, icon: "🛋️" },
-//   { name: "桌子", price: 0, icon: "🪑" },
-//   { name: "床", price: 0, icon: "🛏️" },
-//   { name: "電視", price: 0, icon: "📺" },
-//   { name: "冰箱", price: 0, icon: "🧊" },
-//   { name: "電腦", price: 0, icon: "💻" },
-//   { name: "衣櫃", price: 0, icon: "🚪" },
-//   { name: "書櫃", price: 0, icon: "📚" },
-//   { name: "燈", price: 0, icon: "💡" },
-//   { name: "地毯", price: 0, icon: "🧶" },
-//   { name: "馬桶", price: 500, icon: "🚽" },
-//   { name: "洗手台", price: 500, icon: "🚰" },
-//   { name: "浴缸", price: 500, icon: "🛁" },
-//   { name: "廚房爐具", price: 500, icon: "🍳" },
-//   { name: "微波爐", price: 500, icon: "🔌" },
-//   { name: "空氣清淨機", price: 500, icon: "🌬️" },
-//   { name: "畫作", price: 500, icon: "🖼️" },
-//   { name: "時鐘", price: 500, icon: "🕰️" },
-//   { name: "音響", price: 500, icon: "🔊" },
-//   { name: "貓", price: 1500, icon: "🐈" },
-//    { name: "豬", price: 1500, icon: "🐖" }
+//   { name: "沙發", price: 0, icon: "🛋️" ,category: "家俱"},
+//   { name: "桌子", price: 0, icon: "🪑" ,category: "家俱"},
+//   { name: "床", price: 200, icon: "🛏️" ,category: "家俱"},
+//   { name: "隔板-", price: 50, icon: " ➖" ,category: "裝飾"},
+//   { name: "隔板+", price: 50, icon: " ➕" ,category: "裝飾"},
+//   { name: "愛心", price: 50, icon: "❤️" ,category: "裝飾"},
+//   { name: "貓", price: 1500, icon: "🐈" ,category: "寵物"},
+//   { name: "小寶寶", price: 150, icon: "👶" ,category: "人物"},
+//   { name: "女孩", price: 150, icon: "👧" ,category: "人物"},
+//   { name: "男孩", price: 150, icon: "👦" ,category: "人物"},
+//   { name: "大人", price: 150, icon: "🧑" ,category: "人物"},
+//   { name: "女人", price: 150, icon: "👩" ,category: "人物"},
+//     { name:"時鐘",price :150,icon:"⏰", category:"裝飾"},
+//   { name: "餐桌", price: 500, icon: "🍽️" ,category: "家俱"},
+//   { name: "收納櫃", price: 600, icon: "🗄️" ,category: "家俱"},  
+//   { name: "電風扇", price: 300, icon: "🌀" ,category: "家電"},
+//   { name: "空調", price: 800, icon: "❄️" ,category: "家電"},
+//   { name: "電暖器", price: 800, icon: "🔥" ,category: "家電"},
+//     { name: "電視", price: 500, icon: "📺" ,category: "家電"},
+//     { name: "冰箱", price: 500, icon: "🧊" ,category: "家電"},
+//     { name: "電腦", price: 500, icon: "💻" ,category: "家電"},
+//     { name: "衣櫃", price: 500, icon: "🚪" ,category: "家俱"},
+//     { name: "書櫃", price: 500, icon: "📚" ,category: "家俱"},
+//     { name: "燈", price: 500, icon: "💡" ,category: "家電"},
+//     { name: "地毯", price: 500, icon: "🧶" ,category: "裝飾"},
+//     { name: "馬桶", price: 500, icon: "🚽" ,category: "衛浴"},
+//     { name: "洗手台", price: 500, icon: "🚰" ,category: "衛浴"},
+//     { name: "浴缸", price: 500, icon: "🛁" ,category: "衛浴"},
+//     { name:"廚房爐具",price :500,icon:"🍳", category:"廚房"},
+//     { name:"微波爐",price :500,icon:"🔌", category:"廚房"},
+//     { name:"空氣清淨機",price :500,icon:"🌬️", category:"家電"},
+//     { name:"畫作",price :500,icon:"🖼️", category:"裝飾"},
+//     { name:"時鐘",price :500,icon:"🕰️", category:"裝飾"},
+//     { name:"音響",price :500,icon:"🔊", category:"家電"},
+//     { name: "豬", price: 1500, icon: "🐖" ,category: "寵物"}
+
 // ];
+
+
+
     //   store.innerHTML = '';
     //   items.forEach(item => {
     //     const div = document.createElement("div");
@@ -450,42 +511,89 @@ const items = [
     //     store.appendChild(div);
     //   });
 
+//   store.innerHTML = '';
+
+// const table = document.createElement("table");
+// table.className = "item-table"; // 給予 class 方便 CSS 控制
+
+// const tr = document.createElement("tr");
+
+// items.forEach(item => {
+//   const td = document.createElement("td");
+//   td.className = "item-td";
+
+//   td.innerHTML = `
+//     <div class="item-card">
+//       <div class="icon">${item.icon}</div>
+//       <div class="price">$${item.price}</div>
+     
+//     </div>
+//   `;
+
+//   td.querySelector(".item-card").onclick = () => {
+//     if (coins >= item.price) {
+//       updateCoins(-item.price);
+//       inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
+//       inventory[item.name].quantity++;
+//       localStorage.setItem("inventory", JSON.stringify(inventory));
+//       loadInventory();
+//     } else {
+//       alert("金幣不足！");
+//     }
+//   };
+
+//   tr.appendChild(td);
+// });
+
+// table.appendChild(tr);
+// store.appendChild(table);
+
+function renderStore(category = "全部") {
   store.innerHTML = '';
 
-const table = document.createElement("table");
-table.className = "item-table"; // 給予 class 方便 CSS 控制
+  const table = document.createElement("table");
+  table.className = "item-table";
 
-const tr = document.createElement("tr");
+  const tr = document.createElement("tr");
 
-items.forEach(item => {
-  const td = document.createElement("td");
-  td.className = "item-td";
+  const filteredItems = category === "全部"
+    ? items
+    : items.filter(item => item.category === category);
 
-  td.innerHTML = `
-    <div class="item-card">
-      <div class="icon">${item.icon}</div>
-      <div class="price">$${item.price}</div>
-     
-    </div>
-  `;
+  filteredItems.forEach(item => {
+    const td = document.createElement("td");
+    td.className = "item-td";
 
-  td.querySelector(".item-card").onclick = () => {
-    if (coins >= item.price) {
-      updateCoins(-item.price);
-      inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
-      inventory[item.name].quantity++;
-      localStorage.setItem("inventory", JSON.stringify(inventory));
-      loadInventory();
-    } else {
-      alert("金幣不足！");
-    }
-  };
+    td.innerHTML = `
+      <div class="item-card">
+        <div class="icon">${item.icon}</div>
+        <div class="price">$${item.price}</div>
+      </div>
+    `;
 
-  tr.appendChild(td);
+    td.querySelector(".item-card").onclick = () => {
+      if (coins >= item.price) {
+        updateCoins(-item.price);
+        inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
+        inventory[item.name].quantity++;
+        localStorage.setItem("inventory", JSON.stringify(inventory));
+        loadInventory();
+      } else {
+        alert("金幣不足！");
+      }
+    };
+
+    tr.appendChild(td);
+  });
+
+  table.appendChild(tr);
+  store.appendChild(table);
+}
+    document.getElementById("categorySelect").addEventListener("change", (e) => {
+  const selectedCategory = e.target.value;
+  renderStore(selectedCategory);
 });
-
-table.appendChild(tr);
-store.appendChild(table);
+    renderStore(); // 預設載入全部分類
 
     }
 
@@ -507,34 +615,94 @@ store.appendChild(table);
     //   });
     // }
 
-    function loadInventory() {
+//     function loadInventory() {
+//   inventoryEl.innerHTML = '';
+
+//   const container = document.createElement("div");
+//   container.className = "inventory-container";
+
+//   Object.keys(inventory).forEach(name => {
+//     const item = inventory[name];
+
+//     const card = document.createElement("div");
+//     card.className = "inventory-card";
+//     card.draggable = true;
+
+//     card.dataset.name = name;
+//     card.dataset.icon = item.icon;
+
+//     card.innerHTML = `
+//       <div class="icon">${item.icon}</div>
+//       <div class="quantity">x${item.quantity}</div>
+//     `;
+
+//     card.ondragstart = e => e.dataTransfer.setData("text", name);
+
+//     container.appendChild(card);
+//   });
+
+//   inventoryEl.appendChild(container);
+// }
+
+   
+
+function loadInventory(category = "全部") {
   inventoryEl.innerHTML = '';
 
-  const container = document.createElement("div");
-  container.className = "inventory-container";
+  const table = document.createElement("div");
+  table.className = "item-table";
 
-  Object.keys(inventory).forEach(name => {
-    const item = inventory[name];
+  const tr = document.createElement("tr");
 
-    const card = document.createElement("div");
-    card.className = "inventory-card";
-    card.draggable = true;
-
-    card.dataset.name = name;
-    card.dataset.icon = item.icon;
-
-    card.innerHTML = `
-      <div class="icon">${item.icon}</div>
-      <div class="quantity">x${item.quantity}</div>
-    `;
-
-    card.ondragstart = e => e.dataTransfer.setData("text", name);
-
-    container.appendChild(card);
+  // 篩選出購買清單中符合分類的物品名稱
+  const filteredNames = Object.keys(inventory).filter(name => {
+    const itemData = items.find(i => i.name === name);
+    if (!itemData) return false;
+    if (category === "全部") return true;
+    return itemData.category === category;
   });
 
-  inventoryEl.appendChild(container);
+  filteredNames.forEach(name => {
+    const itemData = items.find(i => i.name === name);
+    const itemInv = inventory[name];
+    console.log(itemData, itemInv);
+    if (!itemData) return;
+
+    const td = document.createElement("td");
+    td.className = "inventory-card";
+
+        td.draggable = true;
+
+    td.dataset.name = itemData.name;  // 儲存名稱
+    td.dataset.icon = itemData.icon; // 儲存圖示 
+
+    td.innerHTML = `
+      <div class="item-card">
+        <div class="icon">${itemData.icon}</div>
+        <div class="quantity">x ${itemInv.quantity} </div>
+      </div>
+    `;
+    td.ondragstart = e => e.dataTransfer.setData("text", name);
+
+    tr.appendChild(td);
+  });
+
+  table.appendChild(tr);
+  inventoryEl.appendChild(table);
 }
+
+
+  
+
+    // 監聽分類選擇變更
+    document.getElementById("inventoryFilter").addEventListener("change", (e) => {
+      const selectedCategory = e.target.value;
+      loadInventory(selectedCategory);
+    });
+
+
+
+
 
 
 
@@ -888,6 +1056,8 @@ applyFurnitureTransform(div); // 預設放大2倍
 inventoryEl.addEventListener("click", e => {
   const target = e.target.closest(".inventory-card");
   if (target) {
+
+    console.log("點擊了庫存物品：", target.dataset.name);
     const name = target.dataset.name;
     const icon = inventory[name].icon;
 
@@ -918,7 +1088,11 @@ inventoryEl.addEventListener("click", e => {
 
     updateCoins(0);
     loadStore();
+
+    // 頁面載入時載入房間家具和庫存
     loadInventory();
+
+    
     switchRoom(1);
   </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
