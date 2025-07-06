@@ -106,26 +106,49 @@
 
 
     const sentences = [
-      { words: ["I", "eat", "apple"], options: ["I", "eat", "apple", "banana", "He"], ch: "我吃蘋果" },
-      { words: ["The", "dog", "runs"], options: ["The", "dog", "runs", "jumps", "cat"], ch: "狗在跑" },
-      { words: ["She", "likes", "music"], options: ["She", "likes", "music", "food", "dance"], ch: "她喜歡音樂" },
-      { words: ["The", "boy", "jumps"], options: ["The", "boy", "jumps", "runs", "plays"], ch: "男孩在跳" },
-      { words: ["A", "cat", "sleeps"], options: ["A", "cat", "sleeps", "barks", "eats"], ch: "貓在睡覺" },
-      { words: ["Children", "play", "outside"], options: ["Children", "play", "outside", "inside", "school"], ch: "小孩在外面玩" },
-      { words: ["We", "go", "to", "school"], options: ["We", "go", "to", "school", "home"], ch: "我們去學校" },
-      { words: ["He", "rides", "a", "bus"], options: ["He", "rides", "a", "bus", "car"], ch: "他搭公車" },
-      { words: ["She", "reads", "a", "book"], options: ["She", "reads", "a", "book", "pencil"], ch: "她在讀書" },
-      { words: ["He", "has", "an", "apple"], options: ["He", "has", "an", "apple", "banana"], ch: "他有一個蘋果" },
-      { words: ["I", "kick", "a", "ball"], options: ["I", "kick", "a", "ball", "run"], ch: "我踢球" },
-      { words: ["The", "book", "is", "on", "the", "table"], options: ["The", "book", "is", "on", "the", "table"], ch: "書在桌上" },
-      { words: ["It", "is", "ten", "o'clock"], options: ["It", "is", "ten", "o'clock", "now"], ch: "現在十點鐘" },
-      { words: ["Time", "to", "sleep"], options: ["Time", "to", "sleep", "wake", "eat"], ch: "該睡覺了" },
-      { words: ["The", "sun", "is", "bright"], options: ["The", "sun", "is", "bright", "dark"], ch: "太陽很明亮" },
-      { words: ["We", "live", "in", "a", "house"], options: ["We", "live", "in", "a", "house"], ch: "我們住在一個房子裡" },
-      { words: ["Mom", "cooks", "in", "the", "kitchen"], options: ["Mom", "cooks", "in", "the", "kitchen"], ch: "媽媽在廚房煮飯" },
-      { words: ["We", "love", "our", "family"], options: ["We", "love", "our", "family", "friends"], ch: "我們愛我們的家庭" },
-      { words: ["They", "eat", "ice", "cream"], options: ["They", "eat", "ice", "cream", "cake"], ch: "他們吃冰淇淋" },
-      { words: ["Birds", "live", "in", "trees"], options: ["Birds", "live", "in", "trees", "sky"], ch: "鳥兒住在樹上" },
+        // 新增的 10 題
+  { words: ["Dad", "drives", "a", "car"], options: ["Dad", "drives", "a", "car", "bike"], ch: "爸爸開車", level: 2 },
+  { words: ["She", "drinks", "milk"], options: ["She", "drinks", "milk", "juice", "eats"], ch: "她喝牛奶", level: 1 },
+  { words: ["The", "baby", "is", "crying"], options: ["The", "baby", "is", "crying", "sleeping"], ch: "嬰兒在哭", level: 2 },
+  { words: ["He", "reads", "a", "newspaper"], options: ["He", "reads", "a", "newspaper", "book"], ch: "他在看報紙", level: 2 },
+  { words: ["It", "is", "a", "big", "dog"], options: ["It", "is", "a", "big", "dog", "cat"], ch: "那是一隻大狗", level: 2 },
+  { words: ["We", "eat", "lunch", "at", "noon"], options: ["We", "eat", "lunch", "at", "noon", "night"], ch: "我們中午吃午餐", level: 3 },
+  { words: ["The", "clock", "is", "ticking"], options: ["The", "clock", "is", "ticking", "stopped"], ch: "時鐘在滴答作響", level: 3 },
+  { words: ["I", "see", "a", "bird"], options: ["I", "see", "a", "bird", "fish"], ch: "我看到一隻鳥", level: 1 },
+  { words: ["He", "plays", "the", "piano"], options: ["He", "plays", "the", "piano", "guitar"], ch: "他彈鋼琴", level: 2 },
+  { words: ["She", "wears", "a", "hat"], options: ["She", "wears", "a", "hat", "scarf"], ch: "她戴著帽子", level: 1 },
+    { words: ["They", "run", "in", "the", "park"], options: ["They", "run", "in", "the", "park", "school"], ch: "他們在公園跑步", level: 2 },
+  { words: ["The", "girl", "has", "a", "doll"], options: ["The", "girl", "has", "a", "doll", "ball"], ch: "女孩有一個洋娃娃", level: 2 },
+  { words: ["We", "eat", "dinner", "at", "home"], options: ["We", "eat", "dinner", "at", "home", "school"], ch: "我們在家吃晚餐", level: 2 },
+  { words: ["He", "draws", "a", "big", "circle"], options: ["He", "draws", "a", "big", "circle", "line"], ch: "他畫了一個大圓圈", level: 2 },
+  { words: ["She", "runs", "with", "her", "dog"], options: ["She", "runs", "with", "her", "dog", "cat"], ch: "她和狗一起跑步", level: 2 },
+  { words: ["The", "kids", "sing", "a", "song"], options: ["The", "kids", "sing", "a", "song", "game"], ch: "孩子們唱歌", level: 2 },
+  { words: ["Dad", "reads", "a", "funny", "book"], options: ["Dad", "reads", "a", "funny", "book", "toy"], ch: "爸爸讀一本有趣的書", level: 2 },
+  { words: ["I", "watch", "TV", "after", "school"], options: ["I", "watch", "TV", "after", "school", "lunch"], ch: "我放學後看電視", level: 2 },
+  { words: ["She", "writes", "with", "a", "pen"], options: ["She", "writes", "with", "a", "pen", "pencil"], ch: "她用筆寫字", level: 2 },
+  { words: ["The", "boy", "plays", "with", "blocks"], options: ["The", "boy", "plays", "with", "blocks", "books"], ch: "男孩玩積木", level: 2 },
+      { words: ["I", "eat", "apple"], options: ["I", "eat", "apple", "banana", "He"], ch: "我吃蘋果", level: 1 },
+  { words: ["The", "dog", "runs"], options: ["The", "dog", "runs", "jumps", "cat"], ch: "狗在跑", level: 1 },
+  { words: ["She", "likes", "music"], options: ["She", "likes", "music", "food", "dance"], ch: "她喜歡音樂", level: 1 },
+  { words: ["The", "boy", "jumps"], options: ["The", "boy", "jumps", "runs", "plays"], ch: "男孩在跳", level: 1 },
+  { words: ["A", "cat", "sleeps"], options: ["A", "cat", "sleeps", "barks", "eats"], ch: "貓在睡覺", level: 1 },
+  { words: ["Children", "play", "outside"], options: ["Children", "play", "outside", "inside", "school"], ch: "小孩在外面玩", level: 2 },
+  { words: ["We", "go", "to", "school"], options: ["We", "go", "to", "school", "home"], ch: "我們去學校", level: 2 },
+  { words: ["He", "rides", "a", "bus"], options: ["He", "rides", "a", "bus", "car"], ch: "他搭公車", level: 2 },
+  { words: ["She", "reads", "a", "book"], options: ["She", "reads", "a", "book", "pencil"], ch: "她在讀書", level: 2 },
+  { words: ["He", "has", "an", "apple"], options: ["He", "has", "an", "apple", "banana"], ch: "他有一個蘋果", level: 2 },
+  { words: ["I", "kick", "a", "ball"], options: ["I", "kick", "a", "ball", "run"], ch: "我踢球", level: 2 },
+  { words: ["The", "book", "is", "on", "the", "table"], options: ["The", "book", "is", "on", "the", "table"], ch: "書在桌上", level: 3 },
+  { words: ["It", "is", "ten", "o'clock"], options: ["It", "is", "ten", "o'clock", "now"], ch: "現在十點鐘", level: 2 },
+  { words: ["Time", "to", "sleep"], options: ["Time", "to", "sleep", "wake", "eat"], ch: "該睡覺了", level: 1 },
+  { words: ["The", "sun", "is", "bright"], options: ["The", "sun", "is", "bright", "dark"], ch: "太陽很明亮", level: 2 },
+  { words: ["We", "live", "in", "a", "house"], options: ["We", "live", "in", "a", "house"], ch: "我們住在一個房子裡", level: 3 },
+  { words: ["Mom", "cooks", "in", "the", "kitchen"], options: ["Mom", "cooks", "in", "the", "kitchen"], ch: "媽媽在廚房煮飯", level: 3 },
+  { words: ["We", "love", "our", "family"], options: ["We", "love", "our", "family", "friends"], ch: "我們愛我們的家庭", level: 2 },
+  { words: ["They", "eat", "ice", "cream"], options: ["They", "eat", "ice", "cream", "cake"], ch: "他們吃冰淇淋", level: 2 },
+  { words: ["Birds", "live", "in", "trees"], options: ["Birds", "live", "in", "trees", "sky"], ch: "鳥兒住在樹上", level: 2 },
+
+
     ];
 
     let sentence = [];
@@ -137,7 +160,7 @@
     sentences.forEach((s, idx) => {
       const opt = document.createElement("option");
       opt.value = idx;
-      opt.text = `第 ${idx + 1} 題：${s.ch}`;
+      opt.text = `lv${s.level} 第 ${idx + 1} 題：${s.ch}`;
       questionSelect.appendChild(opt);
     });
 
