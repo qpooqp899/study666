@@ -269,7 +269,12 @@
 
 </head>
 <body>
+       <a href="../index.html" style="position:absolute;left:10px;top:10px;font-size:24px;text-decoration:none;background:#eee;padding:6px 18px;border-radius:8px;color:#222;box-shadow:0 2px 6px #ccc;">← 返回選單</a>
+  <h1
+  style="text-align: center; margin-top: 20px; color: #333; font-size: 32px; font-weight: bold;">
+  🐈🐈🐈溫馨的家</h1>
   <div id="topMenu">
+
     <div class="roomBtn" onclick="switchRoom(1)">1樓</div>
     <div class="roomBtn" onclick="unlockRoom(2)">2樓</div>
     <div class="roomBtn" onclick="unlockRoom(3)">3樓</div>
@@ -340,6 +345,7 @@
   <div id="inventory"></div>
 
   <script>
+let currentCategory = "全部"; // 預設分類
 
 const items = [
   { name: "沙發", price: 200, icon: "🛋️" ,category: "家俱"},
@@ -646,7 +652,7 @@ function renderStore(category = "全部") {
 
    
 
-function loadInventory(category = "全部") {
+function loadInventory() {
   inventoryEl.innerHTML = '';
 
   const table = document.createElement("div");
@@ -658,8 +664,8 @@ function loadInventory(category = "全部") {
   const filteredNames = Object.keys(inventory).filter(name => {
     const itemData = items.find(i => i.name === name);
     if (!itemData) return false;
-    if (category === "全部") return true;
-    return itemData.category === category;
+    if (currentCategory === "全部") return true;
+    return itemData.category === currentCategory;
   });
 
   filteredNames.forEach(name => {
@@ -697,7 +703,8 @@ function loadInventory(category = "全部") {
     // 監聽分類選擇變更
     document.getElementById("inventoryFilter").addEventListener("change", (e) => {
       const selectedCategory = e.target.value;
-      loadInventory(selectedCategory);
+      currentCategory = selectedCategory;
+      loadInventory();
     });
 
 
@@ -753,8 +760,8 @@ localStorage.setItem("inventory", JSON.stringify(inventory));
   });
   localStorage.setItem("roomData", JSON.stringify(roomData));
 
-  loadInventory();
-   
+    loadInventory(); // 更新購買清單顯示
+    
 
     }
 
