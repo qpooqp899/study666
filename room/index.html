@@ -157,8 +157,116 @@
       transform: scale(1.05);
     }
 
+   
+/* 桌機預設：橫向表格排列 */
+.item-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  overflow-x: auto;
+}
+
+.item-td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 8px;
+  min-width: 120px;
+}
+
+.item-card .icon {
+  font-size: 24px;
+}
+
+.item-card .price {
+  margin: 4px 0;
+  font-weight: bold;
+}
+
+.buy-btn {
+  padding: 4px 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.buy-btn:hover {
+  background-color: #45a049;
+}
+
+/* ✅ 手機模式：橫向卡片可滑動 */
+@media (max-width: 768px) {
+  .item-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .item-table tr {
+    display: flex;
+  }
+
+  .item-td {
+    display: inline-block;
+    width: 140px;
+    white-space: normal;
+    border: none;
+  }
+
+  .item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  
+  
+}
+
+
+
+
 
   </style>
+  <style>
+.inventory-container {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+  padding: 10px;
+}
+
+/* 單個卡片樣式 */
+.inventory-card {
+  flex: 0 0 auto;
+  width: 100px;
+  background: #f1f1f1;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.inventory-card .icon {
+  font-size: 28px;
+}
+
+.inventory-card .quantity {
+  margin-top: 6px;
+  font-weight: bold;
+  color: #333;
+}
+</style>
+
+
 </head>
 <body>
   <div id="topMenu">
@@ -261,6 +369,7 @@ const items = [
   { name: "沙發", price: 200, icon: "🛋️" },
   { name: "桌子", price: 200, icon: "🪑" },
   { name: "床", price: 200, icon: "🛏️" },
+    { name: "貓", price: 1500, icon: "🐈" },
   { name: "電視", price: 500, icon: "📺" },
   { name: "冰箱", price: 500, icon: "🧊" },
   { name: "電腦", price: 500, icon: "💻" },
@@ -277,7 +386,6 @@ const items = [
   { name: "畫作", price: 500, icon: "🖼️" },
   { name: "時鐘", price: 500, icon: "🕰️" },
   { name: "音響", price: 500, icon: "🔊" },
-  { name: "貓", price: 1500, icon: "🐈" },
    { name: "豬", price: 1500, icon: "🐖" }
 ];
 
@@ -321,43 +429,110 @@ const items = [
     //     store.appendChild(div);
     //   });
 
-     store.innerHTML = '';
-      items.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `${item.icon}<br>$${item.price}`;
-        div.onclick = () => {
-          if (coins >= item.price) {
-            updateCoins(-item.price);
-            inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
-            inventory[item.name].quantity++;
-            localStorage.setItem("inventory", JSON.stringify(inventory));
+    //  store.innerHTML = '';
+    //   items.forEach(item => {
+    //     const div = document.createElement("div");
+    //     div.className = "item";
+    //     div.innerHTML = `${item.icon}<br>$${item.price}`;
+    //     div.onclick = () => {
+    //       if (coins >= item.price) {
+    //         updateCoins(-item.price);
+    //         inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
+    //         inventory[item.name].quantity++;
+    //         localStorage.setItem("inventory", JSON.stringify(inventory));
            
-          } else {
-            alert("金幣不足！");
-          }
-        };
-        store.appendChild(div);
-      });
+    //       } else {
+    //         alert("金幣不足！");
+    //       }
+    //     };
+    //     store.appendChild(div);
+    //   });
+
+  store.innerHTML = '';
+
+const table = document.createElement("table");
+table.className = "item-table"; // 給予 class 方便 CSS 控制
+
+const tr = document.createElement("tr");
+
+items.forEach(item => {
+  const td = document.createElement("td");
+  td.className = "item-td";
+
+  td.innerHTML = `
+    <div class="item-card">
+      <div class="icon">${item.icon}</div>
+      <div class="price">$${item.price}</div>
+      <button class="buy-btn">購買</button>
+    </div>
+  `;
+
+  td.querySelector(".buy-btn").onclick = () => {
+    if (coins >= item.price) {
+      updateCoins(-item.price);
+      inventory[item.name] = inventory[item.name] || { icon: item.icon, quantity: 0 };
+      inventory[item.name].quantity++;
+      localStorage.setItem("inventory", JSON.stringify(inventory));
+    } else {
+      alert("金幣不足！");
+    }
+  };
+
+  tr.appendChild(td);
+});
+
+table.appendChild(tr);
+store.appendChild(table);
+
     }
 
 
+
+    // function loadInventory() {
+    //   inventoryEl.innerHTML = '';
+    //   Object.keys(inventory).forEach(name => {
+    //     const item = inventory[name];
+    //     const div = document.createElement("div");
+    //     div.className = "item";
+    //     div.draggable = true;
+       
+    //         div.dataset.name = name;  // 👈 關鍵：一定要設
+    //     div.dataset.icon = item.icon;  // 👈 儲存圖示
+    //     div.textContent = `${item.icon} x${item.quantity}`;
+    //     div.ondragstart = e => e.dataTransfer.setData("text", name);
+    //     inventoryEl.appendChild(div);
+    //   });
+    // }
 
     function loadInventory() {
-      inventoryEl.innerHTML = '';
-      Object.keys(inventory).forEach(name => {
-        const item = inventory[name];
-        const div = document.createElement("div");
-        div.className = "item";
-        div.draggable = true;
-       
-            div.dataset.name = name;  // 👈 關鍵：一定要設
-        div.dataset.icon = item.icon;  // 👈 儲存圖示
-        div.textContent = `${item.icon} x${item.quantity}`;
-        div.ondragstart = e => e.dataTransfer.setData("text", name);
-        inventoryEl.appendChild(div);
-      });
-    }
+  inventoryEl.innerHTML = '';
+
+  const container = document.createElement("div");
+  container.className = "inventory-container";
+
+  Object.keys(inventory).forEach(name => {
+    const item = inventory[name];
+
+    const card = document.createElement("div");
+    card.className = "inventory-card";
+    card.draggable = true;
+
+    card.dataset.name = name;
+    card.dataset.icon = item.icon;
+
+    card.innerHTML = `
+      <div class="icon">${item.icon}</div>
+      <div class="quantity">x${item.quantity}</div>
+    `;
+
+    card.ondragstart = e => e.dataTransfer.setData("text", name);
+
+    container.appendChild(card);
+  });
+
+  inventoryEl.appendChild(container);
+}
+
 
 
 
@@ -647,7 +822,7 @@ div.textContent = f.icon || inventory[f.name]?.icon || f.name;
 
 //手機板點擊家具
 inventoryEl.addEventListener("click", e => {
-  const target = e.target.closest(".item");
+  const target = e.target.closest(".inventory-card");
   if (target) {
     const name = target.dataset.name;
     const icon = inventory[name].icon;
