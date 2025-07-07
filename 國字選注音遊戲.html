@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <title> 📙 國字選注音遊戲</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 
   <style>
     body {
@@ -85,6 +85,9 @@
       .char { font-size: 48px; }
       .options button, .controls button { font-size: 18px; padding: 8px 16px; }
     }
+    .bounce {
+  animation: bounce 0.4s ease-in-out;
+}
   </style>
 </head>
 <body>
@@ -93,7 +96,7 @@
    <div class="container">
     <h1>📙 國字選注音遊戲</h1>
   <div class="score" id="scoreBoard">得分：0</div>
-  <div class="coin-display" id="coinDisplay">金幣：0</div>
+  <div class="coin-display" id="coinDisplay">💰金幣：0</div>
   <div class="timer" id="timer">⏳ 倒數：180秒</div>
   <div style="margin-bottom: 20px;">
     <label for="levelSelect" style="font-size:20px;">選擇年級：</label>
@@ -176,6 +179,8 @@ let score = 0;
 let coins = parseInt(localStorage.getItem('coins')) || 0;
 let timer = 180;
 let interval;
+let isAnswered = false; // 用來判斷是否已經回答過問題
+
 
 const speedSlider = document.getElementById("speedSlider");
 const speedValue = document.getElementById("speedValue");
@@ -203,6 +208,8 @@ function updateDisplay() {
 }
 
 function renderQuestion() {
+    isAnswered = false; // 每次出新題目都重設為 false
+
   //重設按鈕 false
   document.getElementById("resetId").disabled = false;
 
@@ -238,25 +245,46 @@ function checkAnswer() {
   const correct = current.zhuyin.join("");
   const answer = selectedZhuyin.join("");
   if (answer === correct) {
-    score++;
-    coins += 10;
+    
+    
+    if (isAnswered == false) {  // 只有第一次答對才加分
+      score++;
+      //簡單+2 中等 +4 高年級 +6 金幣 
+      if (document.getElementById("levelSelect").value === "low") {
+        coins += 2; // 每答對一次加 2 分
+      } else if (document.getElementById("levelSelect").value === "mid") {
+        coins += 4; // 每答對一次加 4 分
+      } else {
+        coins += 6; // 每答對一次加 6 分
+      }
+     
+      document.getElementById("scoreBoard").innerText = "🏆 得分："
+      localStorage.setItem('coins', coins);
+    }
+
+    isAnswered = true; // 標記本題已答對
     document.getElementById("correctSound").play();
     // 顯示正確注音並加上背景顏色
     showCorrectZhuyin(current.zhuyin);
     speakZhuyin(current.zhuyin, current.char);
-    document.getElementById("message").innerText = "🎉 正確！+10 金幣";
+    document.getElementById("message").innerText = `🎉 正確！+${coins} 金幣`;
     document.getElementById("nextBtn").disabled = false;
     //重設按鈕反灰
     document.getElementById("resetId").disabled = true;
     updateDisplay();
   } else {
-    document.getElementById("wrongSound").play();
-    document.getElementById("message").innerText = "❌ 錯誤，再試一次！";
-    // 錯誤時自動重播注音
-    speakZhuyin(current.zhuyin, current.char);
-    reset();
+  document.getElementById("wrongSound").play();
+  coins = Math.max(0, coins - 10); // 金幣不得低於 0
+reset(); // 先清除畫面
+document.getElementById("message").innerText = "❌ 錯誤！-10 金幣，再試一次！"; // 再顯示訊息
+
+
+  // 錯誤時自動重播注音
+  speakZhuyin(current.zhuyin, current.char);
+  reset();
+  updateDisplay(); // ← 加上這行更新金幣與分數顯示
   }
-  localStorage.setItem('coins', coins);
+
 // 顯示正確注音並加上背景顏色
 function showCorrectZhuyin(zhuyinArr) {
   const selectedDiv = document.getElementById("selected");
