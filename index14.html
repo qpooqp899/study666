@@ -486,7 +486,7 @@ function checkAnswer() {
     speakWord(); // 正確後完整單字發音
      if (isCorrect) return; // 如果已經答對就不再執行
          isCorrect = true; // ✅ 設定狀態，表示已答對
-       updateCoins(+20); // ✅ 答對加金幣
+       updateCoins(+10); // ✅ 答對加金幣
     
 document.getElementById("resetGame").style.display = "none"; // 隱藏重玩按鈕
 
