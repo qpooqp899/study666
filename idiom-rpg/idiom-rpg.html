@@ -422,6 +422,8 @@ document.getElementById("enemyLevel").textContent = enemy.level;
 }
 
 function loadNewQuestion() {
+        document.querySelector(".actions button").disabled = false; // 重新啟用送出按鈕
+
   selectedChars = [];
   document.getElementById("selected").textContent = "";
 current = idioms[Math.floor(Math.random() * idioms.length)];
@@ -495,12 +497,14 @@ function submitAnswer() {
   const enemyBox = document.getElementById("enemyBox");
 
   if (answer === current.idiom) {
+         coins += 10; // 答對 +10
+        //確定送出反灰
+      document.querySelector(".actions button").disabled = true;
+
     showEffect(enemyBox, "⚡️");
     setTimeout(() => {
       enemy.hp -= player.atk;
       log(`🧙‍♂️ 攻擊成功，造成 ${player.atk} 傷害！👹剩下 ${Math.max(enemy.hp, 0)} HP`);
-      
-      coins += 10; // 答對 +10
       log(`🧙‍♂️ 獲得 10 金幣！`);
       if (enemy.hp <= 0) {
   log("🎉 怪物被擊敗了！再獲得 100 金幣！");
