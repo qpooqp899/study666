@@ -233,7 +233,7 @@
   <div id="answer"></div>
   <div>
     <button id="resetGame" onclick="resetGame()">重玩</button>
-    <button onclick="nextWord()">下一題</button>
+    <button id="nextWord" onclick="nextWord() ">下一題</button>
     <button id="hintBtn" onclick="showHint()">提示 -50金幣</button>
   </div>
   <div style="margin:10px 0;">
@@ -478,6 +478,8 @@ function checkAnswer() {
     result.textContent = "✅ 正確！ +20 💰金幣";
     result.style.color = "green";
     correctSound.currentTime = 0;
+  //顯示下一題按鈕
+    document.getElementById("nextWord").style.display = "inline-block";
 
     correctSound.play();
     document.getElementById("replayWordBtn").style.display = "inline-block";
@@ -510,6 +512,8 @@ function resetGame() {
   document.getElementById("replayWordBtn").style.display = "none";
       isCorrect = false; // ✅ 重置狀態
 document.getElementById("resetGame").style.display = ""; // 顯示重玩按鈕
+
+
   
   displayShuffled();
 }
@@ -520,6 +524,9 @@ function nextWord() {
   currentWord = wordList[randomIndex].word;
   currentMeaning = wordList[randomIndex].meaning;
   document.getElementById("meaning").textContent = `中文意思：${currentMeaning}`;
+
+  //隱藏下一題按鈕
+  document.getElementById("nextWord").style.display = "none";
   resetGame();
 }
 
