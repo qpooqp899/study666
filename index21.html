@@ -147,6 +147,13 @@
   100% { transform: translateY(140px) rotate(360deg); opacity: 0; }
 }
 
+#exp-text {
+
+  font-size: 16px;
+  color: #fff;
+}
+
+
   </style>
 </head>
 <body>
@@ -167,21 +174,27 @@
         <ul>
         <li>🍒 100、🍋 200、🍊 300、⭐ 800、💎 1500、🎁 5000 金幣</li>
         </ul>
-        <li>若有 <b>🎁</b> 且不是三個 <b>🎁</b> 則獎勵雙倍</li>
+        <li>若有 <b>🎁</b> 且不是三個 <b>🎁</b> 其他兩個相同，獲得獎勵</li>
         <li>每3次中獎升級，等級越高稀有符號機率提升</li>
       </ul>
       <button onclick="document.getElementById('rewardModal').style.display='none'" style="margin-top:10px;background:#eee;color:#222;">關閉</button>
       </div>
     </div>
+    <div>
+🎮 今日已玩：<span id="play-count">0</span>/100
+
+    </div>
     <canvas id="slotCanvas" width="300" height="300"></canvas>
+
+      
     <div id="info">
       💰 金幣：<span id="coins">0</span>｜🧬 等級：<span id="level">1</span>
       <br>
-</div>
-  🎮 今日已玩：<span id="play-count">0</span>/100
-      <div id="exp-bar-container">
-  <div id="exp-bar"></div>
 
+      <div id="exp-bar-container">
+      <div id="exp-bar"></div>
+      </div>
+  <div id="exp-text">經驗值：0 / 100</div>
     <audio id="success-sound" src="./Generated/y2405.mp3"></audio>
       ⏳ 下次補幣：<span id="coin-timer">--:--</span>
     </div>
@@ -189,7 +202,8 @@
 
     <button onclick="startSpin()">開始！</button>
     <div id="result"></div>
-  
+        
+
   </div>
 
 
@@ -199,7 +213,7 @@
     const canvas = document.getElementById("slotCanvas");
     const ctx = canvas.getContext("2d");
     const symbols = ["🍒", "🍋", "🍊", "⭐", "💎", "🎁"]; // 🎁 = 雙倍
-    const baseWeights = [3, 3, 3, 1.5, 1, 0.3];
+    const baseWeights = [10, 10, 10, 1, 0.6, 0.1]; // 基本權重，數字越大機率越高
 
     let coins = parseInt(localStorage.getItem("coins") || "100");
     let level = parseInt(localStorage.getItem("level") || "1");
@@ -237,10 +251,13 @@ if (lastPlayDate !== today) {
     let exp = parseInt(localStorage.getItem("exp") || "0");
 const expBar = document.getElementById("exp-bar");
 
+
 function updateExpBar() {
   const maxExp = level * 100;
   const percent = Math.min(100, (exp / maxExp) * 100);
   expBar.style.width = percent + "%";
+    const expText = document.getElementById("exp-text");
+  expText.textContent = `經驗值：${exp} / ${maxExp}`;
 }
 
 
@@ -268,7 +285,7 @@ function updateExpBar() {
 
 
 
-
+// 等級獲得符號的加權索引
     function getWeightedSymbolIndex() {
       const weights = baseWeights.map(w => w + level * 0.1);
       const total = weights.reduce((a, b) => a + b, 0);
