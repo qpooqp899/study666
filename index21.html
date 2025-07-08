@@ -69,6 +69,84 @@
       0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
       100% { transform: translate(-50%, -300%) scale(0.2); opacity: 0; }
     }
+
+    #exp-bar-container {
+  width: 100%;
+  background: #333;
+  border-radius: 8px;
+  margin-top: 12px;
+  height: 20px;
+  overflow: hidden;
+}
+#exp-bar {
+  height: 100%;
+  background: limegreen;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+.coin-fall {
+  position: absolute;
+  font-size: 28px;
+  animation: fall 1s ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(150px); opacity: 0; }
+}
+
+  #coin-balance {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    #coin-animation-container {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .coin {
+      font-size: 24px;
+      color: gold;
+      animation: floatUp 1.2s ease-out forwards;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0.9;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+        .coin-img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  animation: drop-img 1.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 100;
+}
+    @keyframes floatUp {
+      0% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(-50%) translateY(-80px);
+        opacity: 0;
+      }
+    }
+
+    
+@keyframes drop-img {
+  0% { transform: translateY(-60px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(140px) rotate(360deg); opacity: 0; }
+}
+
   </style>
 </head>
 <body>
@@ -76,6 +154,7 @@
    <div class="container">
   <div class="slot-machine">
     <h1>🎰 拉霸機</h1>
+      
     <!-- 獎勵說明按鈕 -->
     <button onclick="document.getElementById('rewardModal').style.display='block'">獎勵說明</button>
     <!-- 彈跳視窗 (Modal) -->
@@ -98,22 +177,28 @@
     <div id="info">
       💰 金幣：<span id="coins">0</span>｜🧬 等級：<span id="level">1</span>
       <br>
+</div>
+
+      <div id="exp-bar-container">
+  <div id="exp-bar"></div>
+    <audio id="success-sound" src="./Generated/y2405.mp3"></audio>
       ⏳ 下次補幣：<span id="coin-timer">--:--</span>
     </div>
+          <div id="coin-animation-container"></div>
+
     <button onclick="startSpin()">開始！</button>
     <div id="result"></div>
-    <div id="coin-anim">💰</div>
+  
   </div>
 
-  <!-- 音效 -->
-  <audio id="spinSound" src="spin.mp3"></audio>
-  <audio id="winSound" src="win.mp3"></audio>
+
+
 
   <script>
     const canvas = document.getElementById("slotCanvas");
     const ctx = canvas.getContext("2d");
     const symbols = ["🍒", "🍋", "🍊", "⭐", "💎", "🎁"]; // 🎁 = 雙倍
-    const baseWeights = [3, 3, 2, 1.5, 1, 0.3];
+    const baseWeights = [3, 3, 3, 1.5, 1, 0.3];
 
     let coins = parseInt(localStorage.getItem("coins") || "100");
     let level = parseInt(localStorage.getItem("level") || "1");
@@ -132,18 +217,43 @@
     let reels = [];
 
     const spinSound = document.getElementById("spinSound");
-    const winSound = document.getElementById("winSound");
 
     const COIN_INTERVAL = 360; // 秒
     const COIN_AMOUNT = 10;
 
+    let exp = parseInt(localStorage.getItem("exp") || "0");
+const expBar = document.getElementById("exp-bar");
+
+function updateExpBar() {
+  const maxExp = level * 100;
+  const percent = Math.min(100, (exp / maxExp) * 100);
+  expBar.style.width = percent + "%";
+}
+
+
     function updateUI() {
       coinDisplay.textContent = coins;
       levelDisplay.textContent = level;
-      localStorage.setItem("coins", coins);
-      localStorage.setItem("level", level);
-      localStorage.setItem("wins", wins);
+       localStorage.setItem("coins", coins);
+  localStorage.setItem("level", level);
+  localStorage.setItem("wins", wins);
+  localStorage.setItem("exp", exp);
+  updateExpBar();
     }
+
+    function addExp(amount) {
+  exp += amount;
+  const expNeeded = level * 100;
+  if (exp >= expNeeded) {
+    exp -= expNeeded;
+    level++;
+    resultText.textContent += ` ⬆️ 等級提升！`;
+  }
+  updateUI();
+}
+
+
+
 
     function getWeightedSymbolIndex() {
       const weights = baseWeights.map(w => w + level * 0.1);
@@ -194,48 +304,117 @@
       }
     }
 
-    function showCoinFly() {
-      coinAnim.classList.remove("coin-fly");
-      void coinAnim.offsetWidth; // reflow
-      coinAnim.classList.add("coin-fly");
-    }
+
 
     function checkResult() {
-      const indices = reels.map(r => r.symbolIndex);
-      const symbolsShown = indices.map(i => symbols[i]);
+  const indices = reels.map(r => r.symbolIndex);
+  const symbolsShown = indices.map(i => symbols[i]);
 
-      const isJackpot = indices.every(i => i === indices[0]);
-      const hasBonus = symbolsShown.includes("🎁");
+  const isJackpot = indices.every(i => i === indices[0]);
+  const symbolRewards = {
+    "🍒": 100,
+    "🍋": 200,
+    "🍊": 300,
+    "⭐": 800,
+    "💎": 1500,
+    "🎁": 5000
+  };
 
-      // 定義每個符號的獎勵
-      const symbolRewards = {
-      "🍒": 100,
-      "🍋": 200,
-      "🍊": 300,
-      "⭐": 800,
-      "💎": 1500,
-      "🎁": 5000 // 🎁本身中三個給最高獎勵
-      };
+  let reward = 0;
+  let matchedSymbol = null;
 
-      if (isJackpot) {
-      let baseSymbol = symbolsShown[0];
-      let reward = symbolRewards[baseSymbol] || 50;
-      // 若有🎁且不是三個🎁，則雙倍
-      if (hasBonus && baseSymbol !== "🎁") reward *= 2;
-      coins += reward;
-      wins++;
-      if (wins % 3 === 0) level++;
-      resultText.textContent = `🎉 中獎！你獲得 ${reward} 金幣 (${symbolsShown.join(" ")})`;
-      localStorage.setItem("coins", coins);
-
-      winSound.play();
-      showCoinFly();
-      } else {
-      resultText.textContent = `😢 沒中～ (${symbolsShown.join(" ")})`;
-      }
-
-      updateUI();
+  if (isJackpot) {
+    matchedSymbol = symbolsShown[0];
+    reward = symbolRewards[matchedSymbol] || 50;
+    if (matchedSymbol !== "🎁" && symbolsShown.includes("🎁")) reward *= 2;
+  } else {
+    // 判斷是否兩個一樣 + 🎁
+    const counts = {};
+    for (let sym of symbolsShown) {
+      counts[sym] = (counts[sym] || 0) + 1;
     }
+
+    for (let sym in counts) {
+      if (sym !== "🎁" && counts[sym] === 2 && counts["🎁"] === 1) {
+        matchedSymbol = sym;
+        reward = symbolRewards[sym] || 50;
+        break;
+      }
+    }
+  }
+
+  function checkResult() {
+  const indices = reels.map(r => r.symbolIndex);
+  const symbolsShown = indices.map(i => symbols[i]);
+
+  const isJackpot = indices.every(i => i === indices[0]);
+  const symbolRewards = {
+    "🍒": 100,
+    "🍋": 200,
+    "🍊": 300,
+    "⭐": 800,
+    "💎": 1500,
+    "🎁": 5000
+  };
+
+  let reward = 0;
+  let matchedSymbol = null;
+
+  if (isJackpot) {
+    matchedSymbol = symbolsShown[0];
+    reward = symbolRewards[matchedSymbol] || 50;
+    if (matchedSymbol !== "🎁" && symbolsShown.includes("🎁")) reward *= 2;
+  } else {
+    // 判斷是否兩個一樣 + 🎁
+    const counts = {};
+    for (let sym of symbolsShown) {
+      counts[sym] = (counts[sym] || 0) + 1;
+    }
+
+    for (let sym in counts) {
+      if (sym !== "🎁" && counts[sym] === 2 && counts["🎁"] === 1) {
+        matchedSymbol = sym;
+        reward = symbolRewards[sym] || 50;
+        break;
+      }
+    }
+  }
+
+  //新增金幣雨動畫
+  if (reward > 0) {
+    coins += reward;
+    wins++;
+    addExp(20);
+    resultText.textContent = `🎉 中獎！你獲得 ${reward} 金幣 (${symbolsShown.join(" ")})`;
+           playSuccessSound();
+           showCoinAnimation(reward);
+           dropCoins(reward);
+  } else {
+    addExp(5);
+    resultText.textContent = `😢 沒中～ (${symbolsShown.join(" ")})`;
+  }
+
+  updateUI();
+}
+
+
+  if (reward > 0) {
+    coins += reward;
+    wins++;
+    addExp(20);
+    resultText.textContent = `🎉 中獎！你獲得 ${reward} 金幣 (${symbolsShown.join(" ")})`;
+           playSuccessSound();
+           showCoinAnimation(reward);
+
+            dropCoins(reward);      
+  } else {
+    addExp(5);
+    resultText.textContent = `😢 沒中～ (${symbolsShown.join(" ")})`;
+  }
+
+  updateUI();
+}
+
 
     function startSpin() {
       if (coins < 10) {
@@ -244,7 +423,7 @@
       }
 
       coins -= 10;
-      spinSound.play();
+      
       resultText.textContent = "🎲 轉動中...";
       updateUI();
       initReels();
@@ -284,6 +463,39 @@
         const sec = String(remain % 60).padStart(2, "0");
         timerDisplay.textContent = `${min}:${sec}`;
       }
+    }
+
+    //金幣音效
+    function playSuccessSound() {
+      document.getElementById("success-sound").play();
+    }
+
+//金碧落下
+ function showCoinAnimation(amount) {
+      const container = document.getElementById("coin-animation-container");
+      for (let i = 0; i < 6; i++) {
+        const coin = document.createElement("div");
+        coin.className = "coin";
+        coin.textContent = `+${amount}`;
+        coin.style.left = `${40 + Math.random() * 20}%`;
+        coin.style.animationDuration = `${0.8 + Math.random() * 0.6}s`;
+        container.appendChild(coin);
+        setTimeout(() => coin.remove(), 1500);
+      }
+    }
+
+    function dropCoins(count = 10) {
+const container = document.getElementById("coin-animation-container");
+  for (let i = 0; i < count; i++) {
+    const img = document.createElement("img");
+    img.src = "./Generated/coin.png"; // 替換為你的金幣圖片路徑
+    img.className = "coin-img";
+    img.style.left = `${Math.random() * 100}%`;
+    img.style.top = `-${Math.random() * 60}px`;
+    img.style.animationDelay = `${i * 0.1}s`;
+    container.appendChild(img);
+    setTimeout(() => img.remove(), 1800);
+  }
     }
 
     // 每秒檢查自動補幣與倒數
