@@ -163,6 +163,26 @@
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+      
+}
+  .item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0; 
+  display: table;
+  table-layout: fixed;
+      
 }
 
 .item-td {
@@ -694,7 +714,7 @@ function loadInventory() {
   inventoryEl.innerHTML = '';
 
   const table = document.createElement("div");
-  table.className = "item-table";
+  table.className = "inventory-table";
 
   const tr = document.createElement("tr");
 
