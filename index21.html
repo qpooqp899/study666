@@ -181,6 +181,7 @@
 
       <div id="exp-bar-container">
   <div id="exp-bar"></div>
+  🎮 今日已玩：<span id="play-count">0</span>/100
     <audio id="success-sound" src="./Generated/y2405.mp3"></audio>
       ⏳ 下次補幣：<span id="coin-timer">--:--</span>
     </div>
@@ -221,6 +222,18 @@
     const COIN_INTERVAL = 360; // 秒
     const COIN_AMOUNT = 10;
 
+    let today = new Date().toISOString().split("T")[0]; // 格式：2025-07-08
+let playCount = parseInt(localStorage.getItem("playCount") || "0");
+let lastPlayDate = localStorage.getItem("lastPlayDate") || today;
+
+if (lastPlayDate !== today) {
+  playCount = 0;
+  lastPlayDate = today;
+  localStorage.setItem("playCount", "0");
+  localStorage.setItem("lastPlayDate", today);
+}
+
+
     let exp = parseInt(localStorage.getItem("exp") || "0");
 const expBar = document.getElementById("exp-bar");
 
@@ -238,6 +251,7 @@ function updateExpBar() {
   localStorage.setItem("level", level);
   localStorage.setItem("wins", wins);
   localStorage.setItem("exp", exp);
+  document.getElementById("play-count").textContent = playCount;
   updateExpBar();
     }
 
@@ -306,44 +320,7 @@ function updateExpBar() {
 
 
 
-    function checkResult() {
-  const indices = reels.map(r => r.symbolIndex);
-  const symbolsShown = indices.map(i => symbols[i]);
-
-  const isJackpot = indices.every(i => i === indices[0]);
-  const symbolRewards = {
-    "🍒": 100,
-    "🍋": 200,
-    "🍊": 300,
-    "⭐": 800,
-    "💎": 1500,
-    "🎁": 5000
-  };
-
-  let reward = 0;
-  let matchedSymbol = null;
-
-  if (isJackpot) {
-    matchedSymbol = symbolsShown[0];
-    reward = symbolRewards[matchedSymbol] || 50;
-    if (matchedSymbol !== "🎁" && symbolsShown.includes("🎁")) reward *= 2;
-  } else {
-    // 判斷是否兩個一樣 + 🎁
-    const counts = {};
-    for (let sym of symbolsShown) {
-      counts[sym] = (counts[sym] || 0) + 1;
-    }
-
-    for (let sym in counts) {
-      if (sym !== "🎁" && counts[sym] === 2 && counts["🎁"] === 1) {
-        matchedSymbol = sym;
-        reward = symbolRewards[sym] || 50;
-        break;
-      }
-    }
-  }
-
-  function checkResult() {
+     function checkResult() {
   const indices = reels.map(r => r.symbolIndex);
   const symbolsShown = indices.map(i => symbols[i]);
 
@@ -398,29 +375,24 @@ function updateExpBar() {
 }
 
 
-  if (reward > 0) {
-    coins += reward;
-    wins++;
-    addExp(20);
-    resultText.textContent = `🎉 中獎！你獲得 ${reward} 金幣 (${symbolsShown.join(" ")})`;
-           playSuccessSound();
-           showCoinAnimation(reward);
-
-            dropCoins(reward);      
-  } else {
-    addExp(5);
-    resultText.textContent = `😢 沒中～ (${symbolsShown.join(" ")})`;
-  }
-
-  updateUI();
-}
-
-
     function startSpin() {
+      const btn = document.querySelector("button[onclick='startSpin()']");
+  btn.disabled = true;
+  setTimeout(() => (btn.disabled = false), spinDuration + 600);
       if (coins < 10) {
         resultText.textContent = "💸 金幣不足，無法轉動。";
         return;
       }
+
+        // 限制每天最多 100 次
+  if (playCount >= 100) {
+    resultText.textContent = "⛔ 今日遊玩次數已達上限（100 次）。請明天再來！";
+    return;
+  }
+
+  playCount++;
+  localStorage.setItem("playCount", playCount);
+  localStorage.setItem("lastPlayDate", today);
 
       coins -= 10;
       
