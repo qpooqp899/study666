@@ -394,7 +394,7 @@ function updateExpBar() {
   localStorage.setItem("playCount", playCount);
   localStorage.setItem("lastPlayDate", today);
 
-      coins -= 10;
+      coins -= 10 * level; // 每次轉動消耗 10 金幣，隨等級提升
       
       resultText.textContent = "🎲 轉動中...";
       updateUI();
