@@ -511,7 +511,7 @@ function submitAnswer() {
       if (enemy.hp <= 0) {
   log("🎉 怪物被擊敗了！再獲得 100 金幣！");
   coins += 100;
-  player.exp += 10;
+  player.exp += 10 * enemy.level; // 獲得經驗值;
   levelUp();
 
   // ⬆️ 怪物變強
@@ -540,14 +540,11 @@ log(`👹 你受傷了，失去 10 金幣！`);
       if (player.hp <= 0) {
          coins = Math.max(0, coins - 100);
         log("💀 玩家被擊敗，重新開始！損失 100金幣");
-        player.level = 1;
-        player.exp = 0;
-        player.atk = 10;
-        player.maxHp = 100;
-        player.hp = 100;
+       
+        player.hp = player.maxHp; //補滿血量重新開始
       }
        saveCoins();
-      savePlayer();
+      // savePlayer();
       updateUI();
       loadNewQuestion();
     }, 800);
