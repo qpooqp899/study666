@@ -449,12 +449,19 @@ function selectChar(char, btn) {
   if (selectedChars.length >= 4) return;
   selectedChars.push(char);
   btn.disabled = true;
+  //按鈕顏色變紅色
+  btn.style.backgroundColor = "#ff6666";
   document.getElementById("selected").textContent = selectedChars.join("");
 }
 
 function resetSelection() {
   selectedChars = [];
   document.getElementById("selected").textContent = "";
+  // 重置按鈕顏色
+  document.querySelectorAll("#btnArea button").forEach(btn => {
+    btn.disabled = false;
+    btn.style.backgroundColor = "#ffd966"; // 恢復原來的顏色
+  });
   document.querySelectorAll("#btnArea button").forEach(btn => btn.disabled = false);
 }
 
@@ -473,7 +480,7 @@ function log(message) {
 }
 
 function levelUp() {
-  const needExp = player.level * 10;
+  const needExp = player.level * 10 ;
   if (player.exp >= needExp) {
     player.level++;
     player.exp = 0;
@@ -506,12 +513,16 @@ function submitAnswer() {
     showEffect(enemyBox, "⚡️");
     setTimeout(() => {
       enemy.hp -= player.atk;
+      //打勾圖案
+      showEffect(playerBox, "✅");
+      log(`✅答對：「${current.idiom}」`);
       log(`🧙‍♂️ 攻擊成功，造成 ${player.atk} 傷害！👹剩下 ${Math.max(enemy.hp, 0)} HP`);
       log(`🧙‍♂️ 獲得 10 金幣！`);
       if (enemy.hp <= 0) {
   log("🎉 怪物被擊敗了！再獲得 100 金幣！");
   coins += 100;
   player.exp += 10 * enemy.level; // 獲得經驗值;
+  
   levelUp();
 
   // ⬆️ 怪物變強
@@ -530,9 +541,16 @@ localStorage.setItem("enemyData", JSON.stringify(enemy));
       loadNewQuestion();
     }, 800);
   } else {
+      showEffect(playerBox, "❌");
     showEffect(playerBox, "🔥");
     setTimeout(() => {
 player.hp -= enemy.atk;
+     
+      log(`❌ 你選擇的成語是：「${answer}」`);
+      //正確答案是
+      log(`✅正確答案是：「${current.idiom}」`);
+      log(`👹 怪物攻擊！`);
+      log(`正確答案是：「${current.idiom}」`);
 log(`👹 怪物反擊造成 ${enemy.atk} 傷害！你剩下 ${Math.max(player.hp, 0)} HP`);
 
       coins = Math.max(0, coins - 10);
