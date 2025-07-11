@@ -212,8 +212,8 @@
   <script>
     const canvas = document.getElementById("slotCanvas");
     const ctx = canvas.getContext("2d");
-    const symbols = ["🍒", "🍋", "🍊", "⭐", "💎", "🎁"]; // 🎁 = 雙倍
-    const baseWeights = [10, 10, 10, 1, 0.6, 0.1]; // 基本權重，數字越大機率越高
+    const symbols = ["🍒", "🍋", "🍊", "⭐", "💎", "🎁","🐷"]; // 🎁 = 雙倍
+    const baseWeights = [100, 50, 10, 1, 0.6, 0.1,0.1]; // 基本權重，數字越大機率越高
 
     let coins = parseInt(localStorage.getItem("coins") || "100");
     let level = parseInt(localStorage.getItem("level") || "1");
@@ -348,7 +348,8 @@ function updateExpBar() {
     "🍊": 300,
     "⭐": 800,
     "💎": 1500,
-    "🎁": 5000
+    "🎁": 5000,
+    "🐷": 10000,
   };
 
   let reward = 0;
@@ -411,7 +412,7 @@ function updateExpBar() {
   localStorage.setItem("playCount", playCount);
   localStorage.setItem("lastPlayDate", today);
 
-      coins -= 10 * level; // 每次轉動消耗 10 金幣，隨等級提升
+      coins -= 10 * level / 2; // 每次轉動消耗 10 金幣，隨等級提升
       
       resultText.textContent = "🎲 轉動中...";
       updateUI();
