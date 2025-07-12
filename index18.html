@@ -185,18 +185,38 @@
 
       const output = document.getElementById("sentenceOutput");
       const correct = sentences[currentIndex].words;
-      if (JSON.stringify(sentence) === JSON.stringify(correct)) {
-        output.innerHTML = `<span class="success">🎉 正確！</span><br>
-          <span style="font-size:22px;">${correct.join(" ")}<br>👉 ${sentences[currentIndex].ch}</span>`;
-        speakSentence(sentence.join(" ")); // 發音正確的句子   
-         if (isCorrect) return;
-        document.getElementById("nextBtn").style.display = "inline-block";
-     isCorrect = true; // ✅ 設定狀態，表示已答對
-          changeCoins(10); // 🎉 答對加金幣
-      } else {
-        output.innerHTML += ' ❌ 錯誤，再試一次！';
-        changeCoins(-10); // ❌ 答錯扣金幣
-      }
+
+
+       const today = getToday();
+
+  // 取得今天已完成的題目記錄
+  let doneData = JSON.parse(localStorage.getItem("doneToday") || "{}");
+  let todayDone = doneData[today] || [];
+
+if (JSON.stringify(sentence) === JSON.stringify(correct)) {
+    if (isCorrect) return;
+
+    output.innerHTML = `<span class="success">🎉 正確！</span><br>
+        <span style="font-size:22px;">${correct.join(" ")}<br>👉 ${sentences[currentIndex].ch}</span>`;
+    speakSentence(sentence.join(" "));
+
+    document.getElementById("nextBtn").style.display = "inline-block";
+    isCorrect = true;
+
+    // ✅ 如果今天還沒答對這題，就給金幣
+    if (!todayDone.includes(currentIndex)) {
+      changeCoins(10);
+      todayDone.push(currentIndex);
+      doneData[today] = todayDone;
+      localStorage.setItem("doneToday", JSON.stringify(doneData));
+    } else {
+      output.innerHTML += `<br><span style="color:#999;">今天已經答對這題，沒有再給金幣喔～</span>`;
+    }
+
+  } else {
+    output.innerHTML += ' ❌ 錯誤，再試一次！';
+    changeCoins(-10);
+  }
     }
 
     function nextSentence() {
@@ -290,15 +310,32 @@ function changeCoins(amount) {
   changeCoins(-50); // 💸 提示扣金幣
 }
 
+//每日重複答對不發金幣
+function getToday() {
+  const today = new Date();
+  return today.toISOString().split('T')[0]; // 例如 "2025-07-12"
+}
+
 // window.onload = function() {
   // 初始化金幣顯示 
 window.onload = function() {
   let coins = parseInt(localStorage.getItem('coins')) || 0; // 預設100金幣
   document.getElementById("coinDisplay").innerText = coins;
   localStorage.setItem("coins", coins); 
+
+   const today = getToday();
+  let doneData = JSON.parse(localStorage.getItem("doneToday") || "{}");
+  // 清除不是今天的紀錄
+  const cleaned = {};
+  if (doneData[today]) {
+    cleaned[today] = doneData[today];
+  }
+  localStorage.setItem("doneToday", JSON.stringify(cleaned));
+  
 };
 
     loadSentence(currentIndex);
   </script>
 </body>
 </html>
+
