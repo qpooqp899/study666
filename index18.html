@@ -194,11 +194,12 @@
   let todayDone = doneData[today] || [];
 
 if (JSON.stringify(sentence) === JSON.stringify(correct)) {
+  speakSentence(correct.join(" "));
     if (isCorrect) return;
 
     output.innerHTML = `<span class="success">🎉 正確！</span><br>
         <span style="font-size:22px;">${correct.join(" ")}<br>👉 ${sentences[currentIndex].ch}</span>`;
-    speakSentence(sentence.join(" "));
+   
 
     document.getElementById("nextBtn").style.display = "inline-block";
     isCorrect = true;
@@ -210,7 +211,8 @@ if (JSON.stringify(sentence) === JSON.stringify(correct)) {
       doneData[today] = todayDone;
       localStorage.setItem("doneToday", JSON.stringify(doneData));
     } else {
-      output.innerHTML += `<br><span style="color:#999;">今天已經答對這題，沒有再給金幣喔～</span>`;
+
+      // output.innerHTML += `<br><span style="color:#999;">今天已經答對這題，沒有再給金幣喔～</span>`;
     }
 
   } else {
@@ -331,7 +333,7 @@ window.onload = function() {
     cleaned[today] = doneData[today];
   }
   localStorage.setItem("doneToday", JSON.stringify(cleaned));
-  
+
 };
 
     loadSentence(currentIndex);
