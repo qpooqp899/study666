@@ -328,11 +328,11 @@ function checkAnswer() {
       score++;
       //簡單+2 中等 +4 高年級 +6 金幣 
       if (document.getElementById("levelSelect").value === "low") {
-        coins += 2; // 每答對一次加 2 分
+        coins += 1; // 每答對一次加 2 分
       } else if (document.getElementById("levelSelect").value === "mid") {
-        coins += 4; // 每答對一次加 4 分
+        coins += 2; // 每答對一次加 4 分
       } else {
-        coins += 6; // 每答對一次加 6 分
+        coins += 3                                                                             ; // 每答對一次加 6 分
       }
      
       document.getElementById("scoreBoard").innerText = "🏆 得分："
