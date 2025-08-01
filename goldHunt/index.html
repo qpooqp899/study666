@@ -286,6 +286,7 @@
           log(`⚠️ ${p.name} 累積 ${name}：${p.bad[type]}/2`);
           if (Object.values(p.bad).filter((b) => b >= 2).length >= 1) {
             p.alive = false;
+            p.gold = 0; // 死亡時金塊歸零
             log(`💀 ${p.name} 因 ${name} 死亡！`);
           }
         }
@@ -330,21 +331,32 @@
       updateUI();
     }
 
-    function saveGameHistory() {
-      playCount++;
-      let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
-      const record = {
-        id: playCount,
-        timestamp: new Date().toLocaleString(),
-        players: players.map((p) => ({ name: p.name, gold: p.gold })),
-      };
-      history.push(record);
-      localStorage.setItem("treasureHuntHistory", JSON.stringify(history));
-      localStorage.setItem("treasureHuntPlayCount", playCount.toString());
-    }
+   function saveGameHistory() {
+  playCount++;
+  let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
+  // 新增：記錄玩家狀態
+  const record = {
+    id: playCount,
+    timestamp: new Date().toLocaleString(),
+    players: players.map((p) => {
+      let status = "";
+      if (!p.alive) {
+        status = "死亡";
+      } else if (p.left) {
+        status = "離開";
+      } else {
+        status = "完成遊戲";
+      }
+      return { name: p.name, gold: p.gold, status };
+    }),
+  };
+  history.push(record);
+  localStorage.setItem("treasureHuntHistory", JSON.stringify(history));
+  localStorage.setItem("treasureHuntPlayCount", playCount.toString());
+}
 
-    function showHistory() {
-      let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
+function showHistory() {
+  let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
   if (history.length === 0) {
     alert("目前無遊玩歷史");
     return;
@@ -355,7 +367,8 @@
     const playersHtml = record.players
       .map((p) => {
         const highlightClass = p.gold === maxGold ? "highlight" : "";
-        return `<div class="${highlightClass}">${p.name}：${p.gold} 金塊</div>`;
+        // 顯示狀態
+        return `<div class="${highlightClass}">${p.name}：${p.gold} 金塊（${p.status}）</div>`;
       })
       .join("");
     html += `<div><strong>遊戲 #${record.id} (${record.timestamp})</strong><br/>${playersHtml}</div><hr/>`;
@@ -366,18 +379,13 @@
   historyIconBtn.onclick = closeHistory;
 }
 
-function closeHistory() {
-  historyPanel.style.display = "none";
-  historyIconBtn.textContent = "📚";
-  historyIconBtn.onclick = showHistory;
-}
-
     function checkGameOver() {
         
       const active = getActivePlayers();
       if (active.length === 0) {
         gameOver = true;
         log("\n⚠️ 所有玩家皆死亡，遊戲結束！");
+         showWinner();
         saveGameHistory();
         showRestartBtn();
         return true;
@@ -385,12 +393,25 @@ function closeHistory() {
       if (turn >= MAX_TURNS) {
         gameOver = true;
         log("\n🎉 遊戲結束！所有回合完成！");
+         showWinner();
         saveGameHistory();
         showRestartBtn();
         return true;
       }
       return false;
     }
+
+    // 新增一個函式來顯示金塊最多的玩家
+function showWinner() {
+  const maxGold = Math.max(...players.map(p => p.gold));
+  const winners = players.filter(p => p.gold === maxGold);
+  if (winners.length === 1) {
+    log(`🏆 恭喜 ${winners[0].name} 獲得最多金塊 (${maxGold})！`);
+  } else {
+    const names = winners.map(p => p.name).join("、");
+    log(`🏆 恭喜 ${names} 並列最多金塊 (${maxGold})！`);
+  }
+}
 
     function showRestartBtn() {
       nextBtn.style.display = "none";
