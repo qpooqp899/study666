@@ -192,7 +192,7 @@
 </span>
 </h1>
 <div id="myTotalGoldPanel" style="font-size:18px;margin-bottom:10px;color:rgb(5, 1, 255);">
-  🏅 你累積的金塊：<span id="myTotalGold">0</span>
+  🏅 你帶走累積的金塊：<span id="myTotalGold">0</span>
 </div>
   <div id="players"></div>
   <button id="startBtn" onclick="startGame()">🎮 遊戲開始</button>
@@ -554,11 +554,12 @@ const restPlayersHtml = players
     }
 
    function leftPlayerRandomEvent() {
+    countdown = 60; // 重置倒數計時
   const leftPlayers = getLeftPlayers();
   leftPlayers.forEach((p, idx) => {
     // 玩家A（你）才顯示回歸按鈕，AI自動判斷
     if (!gameOver && !p.isAI) {
-      let countdown = 10;
+      let countdown = 30;
       leaveBtn.style.display = "inline-block";
       leaveBtn.textContent = `🔄 回歸探險（${countdown}s）`;
       leaveBtn.disabled = false;
@@ -806,12 +807,14 @@ let superGoldEvents = {
 // 新增：超級金塊事件
 // ...existing code...
 function superGoldEvent(period) {
+  
   log("🌟 發現超級金塊寶藏！30 顆金塊，只有這次選擇離開的玩家才能獲得！");
   superGoldEvents[period] = true;
 
   let superGoldLeavers = [];
  if (!players[0].alive || players[0].left) {
   // 玩家A已死亡或離開，由兩位AI選擇
+   countdown = 20; // 重置倒數計時
   log("玩家A已死亡或離開，改由兩位AI進行超級金塊選擇！");
   aiChooseTwo();
 } else {
