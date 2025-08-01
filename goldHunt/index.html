@@ -166,6 +166,10 @@
               <a href="../index.html" style="position:absolute;left:10px;top:10px;font-size:24px;text-decoration:none;background:#eee;padding:6px 18px;border-radius:8px;color:#222;box-shadow:0 2px 6px #ccc;">← 返回選單</a>
 
  <h1 style="display: flex; align-items: center; justify-content: space-between;">
+
+  <span>🔍 尋寶奪金：探險小遊戲
+    
+  </span>
       <span>
   <span id="menuWrapper" style="position:relative;">
   <button id="menuBtn" style="font-size:24px;padding:4px 10px;">☰</button>
@@ -174,10 +178,6 @@
     <button id="historyIconBtn" title="遊玩歷史" style="font-size:20px;padding:4px 16px;width:100%;" onclick="showHistory()">📚 遊玩歷史</button>
   </span>
 </span>
-  <span>🔍 尋寶奪金：探險小遊戲
-    
-  </span>
-
   
   
 </span>
@@ -309,13 +309,24 @@ document.addEventListener("click", function(e) {
         else statusIcon = "🧭";
         // 金塊最多者加 highlight
         const goldClass = p.gold === maxGold && maxGold > 0 ? "highlight" : "";
-        return `<div style="display:inline-block;text-align:center;margin:0 6px;">
-          <div style="font-size:22px;">${statusIcon}</div>
-          <div style="font-size:15px;">${p.name.replace('玩家','')}</div>
-          <div style="font-size:16px;">🥇<span class="${goldClass}">${p.gold}</span></div>
-        </div>`;
-      })
-      .join("");
+         // 厄運總次數
+      const badSum = Object.values(p.bad).reduce((a, b) => a + b, 0);
+       // 厄運詳細內容
+      const badDetail = `陷阱:${p.bad.trap} 殭屍:${p.bad.zombie} 毒蟲:${p.bad.poison}`;
+      return `<div style="display:inline-block;text-align:center;margin:0 6px;">
+        <div style="font-size:22px;">${statusIcon}</div>
+        <div style="font-size:15px;">${p.name.replace('玩家','')}</div>
+        <div style="font-size:16px;">🥇<span class="${goldClass}">${p.gold}</span></div>
+        <div style="font-size:15px;">
+          <span 
+            style="cursor:pointer;text-decoration:underline dotted;" 
+            onclick="alert('陷阱：${p.bad.trap}\\n殭屍：${p.bad.zombie}\\n毒蟲咬傷：${p.bad.poison}')"
+            title="點擊查看詳細厄運"
+          >👿${badSum}</span>
+        </div>
+      </div>`;
+    })
+    .join("");
   } else {
     // 桌面版維持原本詳細資訊
     playersEl.innerHTML = players
