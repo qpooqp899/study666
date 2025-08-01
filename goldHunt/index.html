@@ -160,6 +160,15 @@
     min-width: 140px;
   }
 }
+  @media (max-width: 600px) {
+    /* ...existing code... */
+    .log {
+      font-size: 20px;
+      height: 300px; /* 原本160+200=360 */
+      padding: 6px;
+    }
+    /* ...existing code... */
+  }
   </style>
 </head>
 <body>
@@ -174,8 +183,8 @@
   <span id="menuWrapper" style="position:relative;">
   <button id="menuBtn" style="font-size:24px;padding:4px 10px;">☰</button>
   <span id="menuDropdown" style="display:none;position:absolute;right:0;top:40px;z-index:1000;background:#fff;border-radius:8px;box-shadow:0 2px 8px #aaa;padding:8px 0;">
-    <button id="rulesIconBtn" title="遊戲規則" style="font-size:20px;padding:4px 16px;width:100%;" onclick="toggleRules()">📜 遊戲規則</button>
-    <button id="historyIconBtn" title="遊玩歷史" style="font-size:20px;padding:4px 16px;width:100%;" onclick="showHistory()">📚 遊玩歷史</button>
+    <button id="rulesIconBtn" title="遊戲規則" style="font-size:20px;padding:4px 16px;width:100%;" onclick="toggleRules()">📜 </button>
+    <button id="historyIconBtn" title="遊玩歷史" style="font-size:20px;padding:4px 16px;width:100%;" onclick="showHistory()">📚 </button>
   </span>
 </span>
   
