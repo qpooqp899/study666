@@ -116,14 +116,14 @@
   <div id="rulesPanel">
     <h3>遊戲規則說明</h3>
     <ul>
-      <li>遊戲最多 40 回合，每回合觸發隨機事件。</li>
+      <li>遊戲最多 50 回合，每回合觸發隨機事件。</li>
       <li>玩家有三種厄運（陷阱、殭屍、毒蟲），每種累積 2 次死亡。</li>
       <li>好運分兩種：抵擋厄運 (defense) 與 金塊加倍 (bonus)。</li>
       <li>遇到好運時，全體玩家隨機獲得一種好運點數。</li>
       <li>發現金塊時，每名活躍玩家平分，並用好運 bonus 可加倍所得金塊。</li>
       <li>玩家可隨時選擇「離開探險」，拿走保留的金塊，離開後由 AI 控制，每回合自動獲得 1 金塊。</li>
       <li>離開玩家有機率在隨機事件中回歸探險。</li>
-      <li>所有玩家死亡或 40 回合結束遊戲。</li>
+      <li>所有玩家死亡或 50 回合結束遊戲。</li>
     </ul>
   </div>
 
@@ -133,7 +133,7 @@
 
   <script>
     const historyIconBtn = document.getElementById("historyIconBtn");
-    const MAX_TURNS = 40;
+    const MAX_TURNS = 50;
     let turn = 0;
     let countdown = 60;
     let countdownTimer;
@@ -456,7 +456,7 @@ function showWinner() {
     }
 
     function startGame() {
-  log("🎮 遊戲開始！共 40 回合，祝你好運！");
+  log("🎮 遊戲開始！共 50 回合，祝你好運！");
   startBtn.disabled = true;
   startBtn.style.display = "none";   // 按下開始後隱藏開始按鈕
   nextBtn.style.display = "inline-block";
