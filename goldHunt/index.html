@@ -489,7 +489,7 @@ function showWinner() {
 // 玩家A（你）
   const self = players[0];
   // 若自己已離開或AI託管，倒數改為 5~10 秒
-  if ((self.left && self.alive) || (!self.alive && self.isAI)) {
+  if ((self.left && self.alive) || !self.alive || self.isAI) {
     countdown = Math.floor(Math.random() * 6) + 5; // 5~10秒
     nextBtn.style.display = "inline-block";
   } else {
