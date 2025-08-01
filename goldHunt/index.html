@@ -105,6 +105,9 @@
   
 </span>
 </h1>
+<div id="myTotalGoldPanel" style="font-size:18px;margin-bottom:10px;color:rgb(5, 1, 255);">
+  🏅 你累積的金塊：<span id="myTotalGold">0</span>
+</div>
   <div id="players"></div>
   <button id="startBtn" onclick="startGame()">🎮 遊戲開始</button>
   <button id="nextBtn" onclick="manualNextEvent()">⏭️ 下一步（倒數中）</button>
@@ -216,6 +219,7 @@
       </div>`;
     })
     .join("");
+    updateMyTotalGold();
 }
 
     function log(msg) {
@@ -368,6 +372,12 @@
   history.push(record);
   localStorage.setItem("treasureHuntHistory", JSON.stringify(history));
   localStorage.setItem("treasureHuntPlayCount", playCount.toString());
+
+    // 新增：累積自己（金塊）總數
+  const self = players[0];
+  let totalGold = Number(localStorage.getItem("myTotalGold") || "0");
+  totalGold += self.gold;
+  localStorage.setItem("myTotalGold", totalGold.toString());
 }
 
 function showHistory() {
@@ -392,6 +402,7 @@ function showHistory() {
   historyPanel.style.display = "block";
   historyIconBtn.textContent = "❌";
   historyIconBtn.onclick = closeHistory;
+  updateMyTotalGold();
 }
 
 function closeHistory() {
@@ -651,7 +662,15 @@ function nextEvent() {
       () => misfortuneEvent("poison", "毒蟲咬傷"),
     ];
 
+    function updateMyTotalGold() {
+  const total = localStorage.getItem("myTotalGold") || "0";
+  document.getElementById("myTotalGold").textContent = total;
+}
+
+
+
     updateUI();
+    updateMyTotalGold();
   </script>
 </body>
 </html>
