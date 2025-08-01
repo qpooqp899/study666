@@ -786,7 +786,7 @@ function aiChooseTwo() {
       return;
     }
     const ai = selected[aiIndex];
-    let aiCountdown = 10;
+    let aiCountdown = 5;
     log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
     const aiInterval = setInterval(() => {
       aiCountdown--;
@@ -821,7 +821,7 @@ function aiChooseTwo() {
   const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
   if (aiCandidates.length > 0) {
     const ai = aiCandidates[Math.floor(Math.random() * aiCandidates.length)];
-    let aiCountdown = 10;
+    let aiCountdown = 5;
     log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
     const aiInterval = setInterval(() => {
       aiCountdown--;
