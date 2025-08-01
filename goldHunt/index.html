@@ -300,6 +300,9 @@
         let leaveChance = 0.5; // 基本離開機率
         if (turn > 20) leaveChance += 0.3; // 回合數高時提高離開意願
         if (goldGap > 20) leaveChance += 0.2; // 落後太多也想離開
+          if (goldReserve > 10) leaveChance += 0.2; // 保留金塊多時再提高
+  if (rank <= 2) leaveChance += 0.2;
+
         if (Math.random() < leaveChance) {
           p.left = true;
           p.gold += goldReserve;
@@ -564,7 +567,7 @@ function superGoldEvent(period) {
   superGoldEvents[period] = true;
 
   let superGoldLeavers = [];
-
+ aiChoose();
   // 玩家自己決定
   leaveBtn.style.display = "inline-block";
   leaveBtn.onclick = function () {
@@ -573,7 +576,7 @@ function superGoldEvent(period) {
     log(`🚪 ${players[0].name} 選擇離開，將參與超級金塊分配！`);
     leaveBtn.style.display = "none";
     leaveBtn.onclick = playerLeave;
-    aiChoose();
+   
   };
 
   // 60秒內沒選，視為不離開
@@ -583,7 +586,6 @@ function superGoldEvent(period) {
     if (!players[0].left) {
       log(`⏰ ${players[0].name} 未選擇離開，繼續冒險！`);
     }
-    aiChoose();
   }, 60000);
 
   // AI 決定
@@ -595,16 +597,29 @@ function superGoldEvent(period) {
     log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
     const aiInterval = setInterval(() => {
       aiCountdown--;
-      // 在 log 區塊顯示倒數（可選：只顯示一次或每次都顯示）
       log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
       if (aiCountdown <= 0) {
         clearInterval(aiInterval);
-        if (Math.random() < 0.5) {
+
+        // 基本離開機率
+        let leaveChance = 0.5;
+
+        // 依據目前金塊數量提高機率（例如金塊超過15顆再+0.2，超過25顆再+0.2）
+        if (ai.gold >= 15) leaveChance += 0.2;
+        if (ai.gold >= 25) leaveChance += 0.2;
+
+        // 依據目前排名（前2名再+0.2）
+        const sorted = [...players].sort((a, b) => b.gold - a.gold);
+        const rank = sorted.findIndex(pl => pl === ai) + 1;
+        if (rank <= 2) leaveChance += 0.2;
+
+        // 決定是否離開
+        if (Math.random() < leaveChance) {
           ai.left = true;
           superGoldLeavers.push(ai);
-          log(`🤖 ${ai.name} 決定離開，將參與超級金塊分配！`);
+          log(`🤖 ${ai.name} 決定離開，將參與超級金塊分配！（金塊：${ai.gold}，排名：${rank}）`);
         } else {
-          log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！`);
+          log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！（金塊：${ai.gold}，排名：${rank}）`);
         }
         distributeSuperGold();
       }
