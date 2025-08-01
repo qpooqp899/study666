@@ -379,6 +379,12 @@ function showHistory() {
   historyIconBtn.onclick = closeHistory;
 }
 
+function closeHistory() {
+  historyPanel.style.display = "none";
+  historyIconBtn.textContent = "📚";
+  historyIconBtn.onclick = showHistory;
+}
+
     function checkGameOver() {
         
       const active = getActivePlayers();
