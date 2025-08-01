@@ -554,6 +554,8 @@ let superGoldEvents = {
   3: false  // 30~35
 };
 
+
+
 // 新增：超級金塊事件
 // ...existing code...
 function superGoldEvent(period) {
@@ -584,12 +586,18 @@ function superGoldEvent(period) {
   }, 60000);
 
   // AI 決定
-  function aiChoose() {
-    const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
-    if (aiCandidates.length > 0) {
-      const ai = aiCandidates[Math.floor(Math.random() * aiCandidates.length)];
-      log(`🤖 ${ai.name} 正在考慮是否離開...`);
-      setTimeout(() => {
+ function aiChoose() {
+  const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
+  if (aiCandidates.length > 0) {
+    const ai = aiCandidates[Math.floor(Math.random() * aiCandidates.length)];
+    let aiCountdown = 10;
+    log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
+    const aiInterval = setInterval(() => {
+      aiCountdown--;
+      // 在 log 區塊顯示倒數（可選：只顯示一次或每次都顯示）
+      log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
+      if (aiCountdown <= 0) {
+        clearInterval(aiInterval);
         if (Math.random() < 0.5) {
           ai.left = true;
           superGoldLeavers.push(ai);
@@ -598,11 +606,12 @@ function superGoldEvent(period) {
           log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！`);
         }
         distributeSuperGold();
-      }, 10000); // AI 也有10秒考慮
-    } else {
-      distributeSuperGold();
-    }
+      }
+    }, 1000);
+  } else {
+    distributeSuperGold();
   }
+}
 
   // 分配超級金塊
   function distributeSuperGold() {
