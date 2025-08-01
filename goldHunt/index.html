@@ -297,9 +297,9 @@
         // 依據回合與金塊差距決定離開意願
         const maxGold = Math.max(...players.map(pl => pl.gold));
         const goldGap = maxGold - p.gold;
-        let leaveChance = 0.3; // 基本離開機率
-        if (turn > 30) leaveChance += 0.3; // 回合數高時提高離開意願
-        if (goldGap > 10) leaveChance += 0.2; // 落後太多也想離開
+        let leaveChance = 0.5; // 基本離開機率
+        if (turn > 20) leaveChance += 0.3; // 回合數高時提高離開意願
+        if (goldGap > 20) leaveChance += 0.2; // 落後太多也想離開
         if (Math.random() < leaveChance) {
           p.left = true;
           p.gold += goldReserve;
