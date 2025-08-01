@@ -273,26 +273,41 @@
       updateUI();
     }
 
-    function misfortuneEvent(type, name) {
-      const active = getActivePlayers();
-      if (active.length === 0) return;
-      log(`☠️ 遭遇厄運：「${name}」，所有玩家 ${type} +1（好運抵擋可抵銷）`);
-      active.forEach((p) => {
-        if (p.luck.defense > 0) {
-          p.luck.defense--;
-          log(`🛡️ ${p.name} 使用好運抵擋厄運！`);
-        } else {
-          p.bad[type]++;
-          log(`⚠️ ${p.name} 累積 ${name}：${p.bad[type]}/2`);
-          if (Object.values(p.bad).filter((b) => b >= 2).length >= 1) {
-            p.alive = false;
-            p.gold = 0; // 死亡時金塊歸零
-            log(`💀 ${p.name} 因 ${name} 死亡！`);
-          }
+   function misfortuneEvent(type, name) {
+  const active = getActivePlayers();
+  if (active.length === 0) return;
+  log(`☠️ 遭遇厄運：「${name}」，所有玩家 ${type} +1（好運抵擋可抵銷）`);
+  active.forEach((p) => {
+    if (p.luck.defense > 0) {
+      p.luck.defense--;
+      log(`🛡️ ${p.name} 使用好運抵擋厄運！`);
+    } else {
+      p.bad[type]++;
+      log(`⚠️ ${p.name} 累積 ${name}：${p.bad[type]}/2`);
+      // AI 強化：厄運超過2時考慮離開
+      if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
+        // 依據回合與金塊差距決定離開意願
+        const maxGold = Math.max(...players.map(pl => pl.gold));
+        const goldGap = maxGold - p.gold;
+        let leaveChance = 0.3; // 基本離開機率
+        if (turn > 30) leaveChance += 0.3; // 回合數高時提高離開意願
+        if (goldGap > 10) leaveChance += 0.2; // 落後太多也想離開
+        if (Math.random() < leaveChance) {
+          p.left = true;
+          p.gold += goldReserve;
+          goldReserve = 0;
+          log(`🤖 ${p.name} 因厄運過多決定離開探險，帶走金塊與保留金！`);
         }
-      });
-      updateUI();
+      }
+      if (Object.values(p.bad).filter((b) => b >= 2).length >= 1) {
+        p.alive = false;
+        p.gold = 0; // 死亡時金塊歸零
+        log(`💀 ${p.name} 因 ${name} 死亡！`);
+      }
     }
+  });
+  updateUI();
+}
 
     function exitChoiceEvent() {
       const active = getActivePlayers();
@@ -528,43 +543,40 @@ let superGoldEvents = {
 // ...existing code...
 function superGoldEvent(period) {
   log("🌟 發現超級金塊寶藏！50 顆金塊，只有這次選擇離開的玩家才能獲得！");
-  // AI隨機選一位還在探險的玩家（包含你）
-  const candidates = getActivePlayers();
-  if (candidates.length === 0) return;
-  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-  log(`🤔 ${chosen.name} 被命運選中，決定是否要離開探險以獲得超級金塊！`);
-
   // 標記本期已觸發
   superGoldEvents[period] = true;
 
-  // 只記錄這次事件的離開者
   let superGoldLeavers = [];
 
-  // 玩家自己
-  if (!chosen.isAI) {
-    leaveBtn.style.display = "inline-block";
-    leaveBtn.onclick = function () {
-      chosen.left = true;
-      superGoldLeavers.push(chosen);
-      log(`🚪 ${chosen.name} 選擇離開，將參與超級金塊分配！`);
-      distributeSuperGold();
-      leaveBtn.style.display = "none";
-      leaveBtn.onclick = playerLeave; // 恢復原本功能
-    };
-    // 若60秒內沒選，視為不離開
-    setTimeout(() => {
-      leaveBtn.style.display = "none";
-      leaveBtn.onclick = playerLeave;
-      distributeSuperGold();
-    }, 60000);
-  } else {
-    // AI 50% 機率離開
-    if (Math.random() < 0.5) {
-      chosen.left = true;
-      superGoldLeavers.push(chosen);
-      log(`🤖 ${chosen.name} 決定離開，將參與超級金塊分配！`);
-    } else {
-      log(`🤖 ${chosen.name} 決定繼續冒險，放棄超級金塊！`);
+  // 玩家自己決定
+  leaveBtn.style.display = "inline-block";
+  leaveBtn.onclick = function () {
+    players[0].left = true;
+    superGoldLeavers.push(players[0]);
+    log(`🚪 ${players[0].name} 選擇離開，將參與超級金塊分配！`);
+    aiChoose();
+  };
+  // 60秒內沒選，視為不離開
+  setTimeout(() => {
+    leaveBtn.style.display = "none";
+    leaveBtn.onclick = playerLeave;
+    aiChoose();
+  }, 60000);
+
+  // 隨機選一位AI，讓AI隨機決定
+  function aiChoose() {
+    leaveBtn.style.display = "none";
+    leaveBtn.onclick = playerLeave;
+    const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
+    if (aiCandidates.length > 0) {
+      const ai = aiCandidates[Math.floor(Math.random() * aiCandidates.length)];
+      if (Math.random() < 0.5) {
+        ai.left = true;
+        superGoldLeavers.push(ai);
+        log(`🤖 ${ai.name} 決定離開，將參與超級金塊分配！`);
+      } else {
+        log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！`);
+      }
     }
     distributeSuperGold();
   }
