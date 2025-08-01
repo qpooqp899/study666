@@ -299,10 +299,10 @@
         const goldGap = maxGold - p.gold;
         let leaveChance = 0.5; // 基本離開機率
         if (turn > 20) leaveChance += 0.3; // 回合數高時提高離開意願
-        if (goldGap > 20) leaveChance += 0.2; // 落後太多也想離開
+        if (goldGap > 10) leaveChance += 0.2; // 落後太多也想離開
           if (goldReserve > 10) leaveChance += 0.2; // 保留金塊多時再提高
-  if (rank <= 2) leaveChance += 0.2;
-
+  if (rank <= 3) leaveChance += 0.2;
+ 
         if (Math.random() < leaveChance) {
           p.left = true;
           p.gold += goldReserve;
