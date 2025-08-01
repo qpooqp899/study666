@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🐉尋寶奪金：探險小遊戲</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      background: #f4f4f4;
+    }
+    .log {
+      white-space: pre-line;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      height: 300px;
+      overflow-y: auto;
+      transition: all 0.3s ease-in-out;
+    }
+    button {
+      margin: 10px 5px 5px 0;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .player-stats {
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .animation {
+      animation: flash 0.6s ease-in-out;
+    }
+    #nextBtn,
+    #leaveBtn,
+    #restartBtn,
+    #historyPanel,
+    #closeHistoryBtn {
+      display: none;
+    }
+    #rulesPanel {
+      background: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    #historyPanel {
+      background: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    .highlight {
+      color: red;
+      font-weight: bold;
+    }
+    @keyframes flash {
+      0% {
+        background-color: #ffeeba;
+      }
+      100% {
+        background-color: #fff;
+      }
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      button {
+        width: 100%;
+        font-size: 18px;
+      }
+    }
+    #rulesIconBtn, #historyIconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+  </style>
+</head>
+<body>
+              <a href="../index.html" style="position:absolute;left:10px;top:10px;font-size:24px;text-decoration:none;background:#eee;padding:6px 18px;border-radius:8px;color:#222;box-shadow:0 2px 6px #ccc;">← 返回選單</a>
+
+ <h1 style="display: flex; align-items: center; justify-content: space-between;">
+  <span>🔍 尋寶奪金：探險小遊戲</span>
+  <span>
+    <button id="rulesIconBtn" title="遊戲規則" style="font-size:20px;padding:4px 8px;" onclick="toggleRules()">📜</button>
+    <button id="historyIconBtn" title="遊玩歷史" style="font-size:20px;padding:4px 8px;" onclick="showHistory()">📚</button>
+  
+  
+</span>
+</h1>
+  <div id="players"></div>
+  <button id="startBtn" onclick="startGame()">🎮 遊戲開始</button>
+  <button id="nextBtn" onclick="manualNextEvent()">⏭️ 下一步（倒數中）</button>
+  <button id="leaveBtn" onclick="playerLeave()">🚪 離開探險</button>
+  <button id="restartBtn" onclick="restartGame()">🔄 重新開始遊戲</button>
+  <div id="rulesPanel">
+    <h3>遊戲規則說明</h3>
+    <ul>
+      <li>遊戲最多 40 回合，每回合觸發隨機事件。</li>
+      <li>玩家有三種厄運（陷阱、殭屍、毒蟲），每種累積 2 次死亡。</li>
+      <li>好運分兩種：抵擋厄運 (defense) 與 金塊加倍 (bonus)。</li>
+      <li>遇到好運時，全體玩家隨機獲得一種好運點數。</li>
+      <li>發現金塊時，每名活躍玩家平分，並用好運 bonus 可加倍所得金塊。</li>
+      <li>玩家可隨時選擇「離開探險」，拿走保留的金塊，離開後由 AI 控制，每回合自動獲得 1 金塊。</li>
+      <li>離開玩家有機率在隨機事件中回歸探險。</li>
+      <li>所有玩家死亡或 40 回合結束遊戲。</li>
+    </ul>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div id="historyPanel"></div>
+
+  <script>
+    const historyIconBtn = document.getElementById("historyIconBtn");
+    const MAX_TURNS = 40;
+    let turn = 0;
+    let countdown = 60;
+    let countdownTimer;
+    let goldReserve = 0;
+    let gameOver = false;
+    let playCount = 0;
+
+    const players = [
+      {
+        name: "玩家A（你）",
+        gold: 0,
+        luck: { defense: 0, bonus: 0 },
+        bad: { trap: 0, zombie: 0, poison: 0 },
+        alive: true,
+        left: false,
+        isAI: false,
+      },
+      {
+        name: "玩家B",
+        gold: 0,
+        luck: { defense: 0, bonus: 0 },
+        bad: { trap: 0, zombie: 0, poison: 0 },
+        alive: true,
+        left: false,
+        isAI: true,
+      },
+      {
+        name: "玩家C",
+        gold: 0,
+        luck: { defense: 0, bonus: 0 },
+        bad: { trap: 0, zombie: 0, poison: 0 },
+        alive: true,
+        left: false,
+        isAI: true,
+      },
+      {
+        name: "玩家D",
+        gold: 0,
+        luck: { defense: 0, bonus: 0 },
+        bad: { trap: 0, zombie: 0, poison: 0 },
+        alive: true,
+        left: false,
+        isAI: true,
+      },
+      {
+        name: "玩家E",
+        gold: 0,
+        luck: { defense: 0, bonus: 0 },
+        bad: { trap: 0, zombie: 0, poison: 0 },
+        alive: true,
+        left: false,
+        isAI: true,
+      },
+    ];
+
+    const logEl = document.getElementById("log");
+    const playersEl = document.getElementById("players");
+    const startBtn = document.getElementById("startBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const rulesPanel = document.getElementById("rulesPanel");
+    const historyPanel = document.getElementById("historyPanel");
+    const showHistoryBtn = document.getElementById("showHistoryBtn");
+    const closeHistoryBtn = document.getElementById("closeHistoryBtn");
+
+    function updateUI() {
+  playersEl.innerHTML = players
+    .map((p) => {
+      const badSum = Object.values(p.bad).reduce((a, b) => a + b, 0);
+      // 厄運顯示：數值為1時加上紅色
+      const badHtml = Object.entries(p.bad)
+        .map(([key, val]) => {
+          const nameMap = { trap: "陷阱", zombie: "殭屍", poison: "毒蟲" };
+          const colorClass = val > 0 ? "highlight" : "";
+          return `<span class="${colorClass}">${nameMap[key]}:${val}</span>`;
+        })
+        .join("、");
+      return `<div class="player-stats">
+        <strong>${p.name}</strong> - 🥇：${p.gold}、👿：${badSum}（${badHtml}）、好運抵擋：${p.luck.defense}、好運加倍：${p.luck.bonus}、狀態：${
+        p.left ? "已離開" : p.alive ? "探險中" : "💀"
+      }
+      </div>`;
+    })
+    .join("");
+}
+
+    function log(msg) {
+      const line = document.createElement("div");
+      line.textContent = msg;
+      line.className = "animation";
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function getActivePlayers() {
+      return players.filter((p) => p.alive && !p.left);
+    }
+    function getLeftPlayers() {
+      return players.filter((p) => p.left && p.alive);
+    }
+
+    function goldEvent(baseAmount) {
+      const active = getActivePlayers();
+      if (active.length === 0) return;
+      const bonus = Math.floor(turn / 5);
+      const amount = baseAmount + Math.floor(Math.random() * 6) + bonus;
+
+      const eachBase = Math.floor(amount / active.length);
+      const leftover = amount % active.length;
+      goldReserve += leftover;
+
+      active.forEach((p) => {
+        let gain = eachBase;
+        if (p.luck.bonus >= 1) {
+          gain *= 2;
+          p.luck.bonus--;
+          log(`✨ ${p.name} 使用好運金塊加倍！`);
+        }
+        p.gold += gain;
+      });
+      log(
+        `💰 發現金塊 ${amount}！${active.length} 名玩家平分 ${eachBase}，多出 ${leftover} 進入保留區 (${goldReserve})`
+      );
+      updateUI();
+    }
+
+    function luckEvent() {
+      const active = getActivePlayers();
+      if (active.length === 0) return;
+      active.forEach((p) => {
+        if (Math.random() < 0.5) {
+          p.luck.defense++;
+          log(`🍀 ${p.name} 獲得好運（抵擋厄運 +1）`);
+        } else {
+          p.luck.bonus++;
+          log(`🍀 ${p.name} 獲得好運（金塊加倍 +1）`);
+        }
+      });
+      updateUI();
+    }
+
+    function misfortuneEvent(type, name) {
+      const active = getActivePlayers();
+      if (active.length === 0) return;
+      log(`☠️ 遭遇厄運：「${name}」，所有玩家 ${type} +1（好運抵擋可抵銷）`);
+      active.forEach((p) => {
+        if (p.luck.defense > 0) {
+          p.luck.defense--;
+          log(`🛡️ ${p.name} 使用好運抵擋厄運！`);
+        } else {
+          p.bad[type]++;
+          log(`⚠️ ${p.name} 累積 ${name}：${p.bad[type]}/2`);
+          if (Object.values(p.bad).filter((b) => b >= 2).length >= 1) {
+            p.alive = false;
+            log(`💀 ${p.name} 因 ${name} 死亡！`);
+          }
+        }
+      });
+      updateUI();
+    }
+
+    function exitChoiceEvent() {
+      const active = getActivePlayers();
+      if (active.length === 0) return;
+
+      log("⏳ 進入決策階段（60秒內），可選擇離開或繼續探險...");
+      startLeaveCountdown();
+
+      leaveBtn.style.display = "inline-block";
+    }
+
+    function playerLeave() {
+      const player = players[0]; // 玩家A（你）
+      if (!player.left && player.alive && !gameOver) {
+        player.left = true;
+        player.gold += goldReserve;
+        goldReserve = 0;
+        log(`🚪 ${player.name} 選擇離開探險，帶走金塊與保留金！`);
+        updateUI();
+
+        leaveBtn.style.display = "none";
+      }
+    }
+
+    function leftPlayerRandomEvent() {
+      const leftPlayers = getLeftPlayers();
+      leftPlayers.forEach((p) => {
+        if (Math.random() < 0.3 && !gameOver) {
+          p.left = false;
+          log(`🔄 ${p.name} 離開後決定回歸探險！`);
+        } else if (!gameOver) {
+          p.gold += 1;
+          log(`💰 ${p.name} 離開中獲得 1 金塊（自動累積）`);
+        }
+      });
+      updateUI();
+    }
+
+    function saveGameHistory() {
+      playCount++;
+      let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
+      const record = {
+        id: playCount,
+        timestamp: new Date().toLocaleString(),
+        players: players.map((p) => ({ name: p.name, gold: p.gold })),
+      };
+      history.push(record);
+      localStorage.setItem("treasureHuntHistory", JSON.stringify(history));
+      localStorage.setItem("treasureHuntPlayCount", playCount.toString());
+    }
+
+    function showHistory() {
+      let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
+  if (history.length === 0) {
+    alert("目前無遊玩歷史");
+    return;
+  }
+  let html = "";
+  history.forEach((record) => {
+    let maxGold = Math.max(...record.players.map((p) => p.gold));
+    const playersHtml = record.players
+      .map((p) => {
+        const highlightClass = p.gold === maxGold ? "highlight" : "";
+        return `<div class="${highlightClass}">${p.name}：${p.gold} 金塊</div>`;
+      })
+      .join("");
+    html += `<div><strong>遊戲 #${record.id} (${record.timestamp})</strong><br/>${playersHtml}</div><hr/>`;
+  });
+  historyPanel.innerHTML = html;
+  historyPanel.style.display = "block";
+  historyIconBtn.textContent = "❌";
+  historyIconBtn.onclick = closeHistory;
+}
+
+function closeHistory() {
+  historyPanel.style.display = "none";
+  historyIconBtn.textContent = "📚";
+  historyIconBtn.onclick = showHistory;
+}
+
+    function checkGameOver() {
+        
+      const active = getActivePlayers();
+      if (active.length === 0) {
+        gameOver = true;
+        log("\n⚠️ 所有玩家皆死亡，遊戲結束！");
+        saveGameHistory();
+        showRestartBtn();
+        return true;
+      }
+      if (turn >= MAX_TURNS) {
+        gameOver = true;
+        log("\n🎉 遊戲結束！所有回合完成！");
+        saveGameHistory();
+        showRestartBtn();
+        return true;
+      }
+      return false;
+    }
+
+    function showRestartBtn() {
+      nextBtn.style.display = "none";
+      leaveBtn.style.display = "none";
+      restartBtn.style.display = "inline-block";
+    }
+
+    function startGame() {
+  log("🎮 遊戲開始！共 40 回合，祝你好運！");
+  startBtn.disabled = true;
+  startBtn.style.display = "none";   // 按下開始後隱藏開始按鈕
+  nextBtn.style.display = "inline-block";
+  leaveBtn.style.display = "inline-block";
+  nextEvent();
+}
+
+
+    function restartGame() {
+      turn = 0;
+      goldReserve = 0;
+      gameOver = false;
+      players.forEach((p) => {
+        p.gold = 0;
+        p.luck = { defense: 0, bonus: 0 };
+        p.bad = { trap: 0, zombie: 0, poison: 0 };
+        p.alive = true;
+        p.left = false;
+      });
+      logEl.textContent = "";
+      updateUI();
+      startBtn.disabled = false;
+      startBtn.style.display = "inline-block";
+      nextBtn.style.display = "none";
+      leaveBtn.style.display = "none";
+      restartBtn.style.display = "none";
+    }
+
+   function startCountdown() {
+// 玩家A（你）
+  const self = players[0];
+  // 若自己已離開或AI託管，倒數改為 5~10 秒
+  if ((self.left && self.alive) || (!self.alive && self.isAI)) {
+    countdown = Math.floor(Math.random() * 6) + 5; // 5~10秒
+    nextBtn.style.display = "inline-block";
+  } else {
+    countdown = 60;
+    nextBtn.style.display = "inline-block";
+  }
+  nextBtn.textContent = `⏭️ 下一步（${countdown}s）`;
+  countdownTimer = setInterval(() => {
+    countdown--;
+    nextBtn.textContent = `⏭️ 下一步（${countdown}s）`;
+    if (countdown <= 0) {
+      clearInterval(countdownTimer);
+      nextEvent();
+    }
+  }, 1000);
+}
+
+    function nextEvent() {
+      clearInterval(countdownTimer);
+      nextBtn.style.display = "inline-block";
+
+      if (checkGameOver()) return;
+
+      turn++;
+      log(`\n🎲 第 ${turn} 回合開始`);
+
+      const event = events[Math.floor(Math.random() * events.length)];
+      event();
+
+      startCountdown();
+    }
+
+    function manualNextEvent() {
+      clearInterval(countdownTimer);
+      nextEvent();
+    }
+
+    function toggleRules() {
+      if (rulesPanel.style.display === "none" || rulesPanel.style.display === "") {
+        rulesPanel.style.display = "block";
+      } else {
+        rulesPanel.style.display = "none";
+      }
+    }
+
+    function startLeaveCountdown() {
+      let leaveCountdown = 60;
+      const leaveInterval = setInterval(() => {
+        leaveCountdown--;
+        if (leaveCountdown <= 0) {
+          clearInterval(leaveInterval);
+          leaveBtn.style.display = "none";
+          nextEvent();
+        }
+      }, 1000);
+    }
+
+    // 新增：記錄超級金塊事件是否已觸發
+let superGoldEvents = {
+  1: false, // 10~15
+  2: false, // 20~25
+  3: false  // 30~35
+};
+
+// 新增：超級金塊事件
+// ...existing code...
+function superGoldEvent(period) {
+  log("🌟 發現超級金塊寶藏！50 顆金塊，只有這次選擇離開的玩家才能獲得！");
+  // AI隨機選一位還在探險的玩家（包含你）
+  const candidates = getActivePlayers();
+  if (candidates.length === 0) return;
+  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  log(`🤔 ${chosen.name} 被命運選中，決定是否要離開探險以獲得超級金塊！`);
+
+  // 標記本期已觸發
+  superGoldEvents[period] = true;
+
+  // 只記錄這次事件的離開者
+  let superGoldLeavers = [];
+
+  // 玩家自己
+  if (!chosen.isAI) {
+    leaveBtn.style.display = "inline-block";
+    leaveBtn.onclick = function () {
+      chosen.left = true;
+      superGoldLeavers.push(chosen);
+      log(`🚪 ${chosen.name} 選擇離開，將參與超級金塊分配！`);
+      distributeSuperGold();
+      leaveBtn.style.display = "none";
+      leaveBtn.onclick = playerLeave; // 恢復原本功能
+    };
+    // 若60秒內沒選，視為不離開
+    setTimeout(() => {
+      leaveBtn.style.display = "none";
+      leaveBtn.onclick = playerLeave;
+      distributeSuperGold();
+    }, 60000);
+  } else {
+    // AI 50% 機率離開
+    if (Math.random() < 0.5) {
+      chosen.left = true;
+      superGoldLeavers.push(chosen);
+      log(`🤖 ${chosen.name} 決定離開，將參與超級金塊分配！`);
+    } else {
+      log(`🤖 ${chosen.name} 決定繼續冒險，放棄超級金塊！`);
+    }
+    distributeSuperGold();
+  }
+
+  // 分配超級金塊
+  function distributeSuperGold() {
+    if (superGoldLeavers.length > 0) {
+      const each = Math.floor(50 / superGoldLeavers.length);
+      superGoldLeavers.forEach(p => {
+        p.gold += each;
+        log(`🏆 ${p.name} 獲得超級金塊 ${each} 顆！`);
+      });
+      const leftover = 50 % superGoldLeavers.length;
+      if (leftover > 0) log(`剩餘 ${leftover} 顆金塊未分配。`);
+    } else {
+      log("😢 沒有人選擇離開，超級金塊消失了！");
+    }
+    updateUI();
+  }
+}
+// ...existing code...
+
+// 修改 nextEvent，插入超級金塊事件
+function nextEvent() {
+  clearInterval(countdownTimer);
+  nextBtn.style.display = "inline-block";
+
+  if (checkGameOver()) return;
+
+  turn++;
+  log(`\n🎲 第 ${turn} 回合開始`);
+
+  // 超級金塊事件機率
+  if (!superGoldEvents[1] && turn >= 10 && turn <= 15 && Math.random() < 0.2) {
+    superGoldEvent(1);
+    startCountdown();
+    return;
+  }
+  if (!superGoldEvents[2] && turn >= 20 && turn <= 25 && Math.random() < 0.2) {
+    superGoldEvent(2);
+    startCountdown();
+    return;
+  }
+  if (!superGoldEvents[3] && turn >= 30 && turn <= 35 && Math.random() < 0.2) {
+    superGoldEvent(3);
+    startCountdown();
+    return;
+  }
+
+  // 動態組合事件池
+  let eventPool = [...events];
+  if (getLeftPlayers().length > 0) {
+    eventPool.push(() => leftPlayerRandomEvent());
+  }
+
+  const event = eventPool[Math.floor(Math.random() * eventPool.length)];
+  event();
+
+  startCountdown();
+}
+
+    const events = [
+      () => goldEvent(5),
+      () => goldEvent(10),
+       () => goldEvent(12),
+        () => goldEvent(18),
+         () => goldEvent(20),
+      () => luckEvent(),
+      () => luckEvent(),
+      () => misfortuneEvent("trap", "掉進陷阱"),
+      () => misfortuneEvent("zombie", "遇到殭屍"),
+      () => misfortuneEvent("poison", "毒蟲咬傷"),
+    ];
+
+    updateUI();
+  </script>
+</body>
+</html>
