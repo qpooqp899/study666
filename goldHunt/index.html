@@ -343,20 +343,51 @@
       }
     }
 
-    function leftPlayerRandomEvent() {
-      const leftPlayers = getLeftPlayers();
-      leftPlayers.forEach((p) => {
-        if (Math.random() < 0.3 && !gameOver) {
-          p.left = false;
-          log(`🔄 ${p.name} 離開後決定回歸探險！`);
-        } else if (!gameOver) {
-          p.gold += 1;
-          log(`💰 ${p.name} 離開中獲得 1 金塊（自動累積）`);
-        }
-      });
-      updateUI();
-    }
+   function leftPlayerRandomEvent() {
+  const leftPlayers = getLeftPlayers();
+  leftPlayers.forEach((p, idx) => {
+    // 玩家A（你）才顯示回歸按鈕，AI自動判斷
+    if (!gameOver && !p.isAI) {
+      let countdown = 10;
+      leaveBtn.style.display = "inline-block";
+      leaveBtn.textContent = `🔄 回歸探險（${countdown}s）`;
+      leaveBtn.disabled = false;
 
+      const interval = setInterval(() => {
+        countdown--;
+        leaveBtn.textContent = `🔄 回歸探險（${countdown}s）`;
+        if (countdown <= 0) {
+          clearInterval(interval);
+          leaveBtn.style.display = "none";
+          log(`⏰ ${p.name} 超過10秒未選擇，放棄本次回歸機會！`);
+        }
+      }, 1000);
+
+      leaveBtn.onclick = function () {
+        clearInterval(interval);
+        p.left = false;
+        leaveBtn.style.display = "none";
+        log(`🔄 ${p.name} 選擇回歸探險！`);
+        updateUI();
+      };
+    } else if (!gameOver && p.isAI) {
+      // AI 30%機率回歸
+      // 計算目前排名
+      const sorted = [...players].sort((a, b) => b.gold - a.gold);
+      const rank = sorted.findIndex(pl => pl === p) + 1;
+      let comebackChance = 0.3;
+      if (rank <= 3) comebackChance += 0.4; // 前3名再+20%
+      if (Math.random() < comebackChance) {
+        p.left = false;
+        log(`🔄 ${p.name} 離開後決定回歸探險！（排名：${rank}）`);
+      } else {
+        p.gold += 1;
+        log(`💰 ${p.name} 離開中獲得 1 金塊（自動累積）`);
+      }
+    }
+  });
+  updateUI();
+}
    function saveGameHistory() {
   playCount++;
   let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
@@ -567,7 +598,15 @@ function superGoldEvent(period) {
   superGoldEvents[period] = true;
 
   let superGoldLeavers = [];
- aiChoose();
+ if (!players[0].alive || players[0].left) {
+  // 玩家A已死亡或離開，由兩位AI選擇
+  log("玩家A已死亡或離開，改由兩位AI進行超級金塊選擇！");
+  aiChooseTwo();
+} else {
+  aiChoose();
+}
+
+
   // 玩家自己決定
   leaveBtn.style.display = "inline-block";
   leaveBtn.onclick = function () {
@@ -579,14 +618,61 @@ function superGoldEvent(period) {
    
   };
 
-  // 60秒內沒選，視為不離開
-  setTimeout(() => {
-    leaveBtn.style.display = "none";
-    leaveBtn.onclick = playerLeave;
-    if (!players[0].left) {
-      log(`⏰ ${players[0].name} 未選擇離開，繼續冒險！`);
+// 60秒內沒選，視為不離開
+setTimeout(() => {
+  leaveBtn.style.display = "none";
+  leaveBtn.onclick = playerLeave;
+  if (!players[0].left && players[0].alive) {
+    log(`⏰ ${players[0].name} 未選擇離開，繼續冒險！`);
+  
+  } else {
+    // 玩家A已死亡或離開，由兩位AI選擇
+    log("玩家A已死亡或離開，改由兩位AI進行超級金塊選擇！");
+
+  }
+}, 60000);
+
+function aiChooseTwo() {
+  const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
+  const shuffled = aiCandidates.sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, 2);
+
+  let aiIndex = 0;
+  function aiNext() {
+    if (aiIndex >= selected.length) {
+      distributeSuperGold();
+      return;
     }
-  }, 60000);
+    const ai = selected[aiIndex];
+    let aiCountdown = 10;
+    log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
+    const aiInterval = setInterval(() => {
+      aiCountdown--;
+      log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
+      if (aiCountdown <= 0) {
+        clearInterval(aiInterval);
+
+        let leaveChance = 0.5;
+        if (ai.gold >= 15) leaveChance += 0.2;
+        if (ai.gold >= 25) leaveChance += 0.2;
+        const sorted = [...players].sort((a, b) => b.gold - a.gold);
+        const rank = sorted.findIndex(pl => pl === ai) + 1;
+        if (rank <= 2) leaveChance += 0.2;
+
+        if (Math.random() < leaveChance) {
+          ai.left = true;
+          superGoldLeavers.push(ai);
+          log(`🤖 ${ai.name} 決定離開，將參與超級金塊分配！（金塊：${ai.gold}，排名：${rank}）`);
+        } else {
+          log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！（金塊：${ai.gold}，排名：${rank}）`);
+        }
+        aiIndex++;
+        aiNext();
+      }
+    }, 1000);
+  }
+  aiNext();
+}
 
   // AI 決定
  function aiChoose() {
