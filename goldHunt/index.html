@@ -557,8 +557,7 @@ let superGoldEvents = {
 // 新增：超級金塊事件
 // ...existing code...
 function superGoldEvent(period) {
-  log("🌟 發現超級金塊寶藏！50 顆金塊，只有這次選擇離開的玩家才能獲得！");
-  // 標記本期已觸發
+  log("🌟 發現超級金塊寶藏！30 顆金塊，只有這次選擇離開的玩家才能獲得！");
   superGoldEvents[period] = true;
 
   let superGoldLeavers = [];
@@ -569,45 +568,58 @@ function superGoldEvent(period) {
     players[0].left = true;
     superGoldLeavers.push(players[0]);
     log(`🚪 ${players[0].name} 選擇離開，將參與超級金塊分配！`);
+    leaveBtn.style.display = "none";
+    leaveBtn.onclick = playerLeave;
     aiChoose();
   };
+
   // 60秒內沒選，視為不離開
   setTimeout(() => {
     leaveBtn.style.display = "none";
     leaveBtn.onclick = playerLeave;
+    if (!players[0].left) {
+      log(`⏰ ${players[0].name} 未選擇離開，繼續冒險！`);
+    }
     aiChoose();
   }, 60000);
 
-  // 隨機選一位AI，讓AI隨機決定
+  // AI 決定
   function aiChoose() {
-    leaveBtn.style.display = "none";
-    leaveBtn.onclick = playerLeave;
     const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
     if (aiCandidates.length > 0) {
       const ai = aiCandidates[Math.floor(Math.random() * aiCandidates.length)];
-      if (Math.random() < 0.5) {
-        ai.left = true;
-        superGoldLeavers.push(ai);
-        log(`🤖 ${ai.name} 決定離開，將參與超級金塊分配！`);
-      } else {
-        log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！`);
-      }
+      log(`🤖 ${ai.name} 正在考慮是否離開...`);
+      setTimeout(() => {
+        if (Math.random() < 0.5) {
+          ai.left = true;
+          superGoldLeavers.push(ai);
+          log(`🤖 ${ai.name} 決定離開，將參與超級金塊分配！`);
+        } else {
+          log(`🤖 ${ai.name} 決定繼續冒險，放棄超級金塊！`);
+        }
+        distributeSuperGold();
+      }, 10000); // AI 也有10秒考慮
+    } else {
+      distributeSuperGold();
     }
-    distributeSuperGold();
   }
 
   // 分配超級金塊
   function distributeSuperGold() {
     if (superGoldLeavers.length > 0) {
-      const each = Math.floor(50 / superGoldLeavers.length);
+      const each = Math.floor(30 / superGoldLeavers.length);
       superGoldLeavers.forEach(p => {
         p.gold += each;
         log(`🏆 ${p.name} 獲得超級金塊 ${each} 顆！`);
       });
-      const leftover = 50 % superGoldLeavers.length;
-      if (leftover > 0) log(`剩餘 ${leftover} 顆金塊未分配。`);
+      const leftover = 30 % superGoldLeavers.length;
+      if (leftover > 0) {
+        goldReserve += leftover;
+        log(`剩餘 ${leftover} 顆金塊進入保留區 (${goldReserve})。`);
+      }
     } else {
-      log("😢 沒有人選擇離開，超級金塊消失了！");
+      goldReserve += 30;
+      log("😢 沒有人選擇離開，超級金塊進入保留區！");
     }
     updateUI();
   }
