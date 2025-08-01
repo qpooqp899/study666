@@ -508,6 +508,8 @@ document.addEventListener("click", function(e) {
         p.left = false;
         leaveBtn.style.display = "none";
         log(`🔄 ${p.name} 選擇回歸探險！`);
+        leaveBtn.disabled = false;
+        leaveBtn.textContent = `🚪 離開探險`;
         updateUI();
       };
     } else if (!gameOver && p.isAI) {
