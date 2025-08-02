@@ -194,15 +194,7 @@
   
 </span>
 </h1>
-<div id="myTotalGoldPanel" style="font-size:18px;margin-bottom:10px;color:rgb(5, 1, 255);">
-  🏅 你帶走累積的金塊：<span id="myTotalGold">0</span>
-</div>
-  <div id="players"></div>
-  <button id="startBtn" onclick="startGame()">🎮 遊戲開始</button>
-  <button id="nextBtn" onclick="manualNextEvent()">⏭️ 下一步（倒數中）</button>
-  <button id="leaveBtn" onclick="playerLeave()">🚪 離開探險</button>
-  <button id="restartBtn" onclick="restartGame()">🔄 重新開始遊戲</button>
-  <div id="rulesPanel">
+ <div id="rulesPanel">
     <h3>遊戲規則說明</h3>
     <ul>
       <li>遊戲最多 50 回合，每回合觸發隨機事件。</li>
@@ -215,10 +207,20 @@
       <li>所有玩家死亡或 50 回合結束遊戲。</li>
     </ul>
   </div>
+    <div id="historyPanel"></div>
+<div id="myTotalGoldPanel" style="font-size:18px;margin-bottom:10px;color:rgb(5, 1, 255);">
+  🏅 你帶走累積的金塊：<span id="myTotalGold">0</span>
+</div>
+  <div id="players"></div>
+  <button id="startBtn" onclick="startGame()">🎮 遊戲開始</button>
+  <button id="nextBtn" onclick="manualNextEvent()">⏭️ 下一步（倒數中）</button>
+  <button id="leaveBtn" onclick="playerLeave()">🚪 離開探險</button>
+  <button id="restartBtn" onclick="restartGame()">🔄 重新開始遊戲</button>
+ 
 
   <div class="log" id="log"></div>
 
-  <div id="historyPanel"></div>
+
 
   <script>
 
