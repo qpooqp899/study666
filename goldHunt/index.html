@@ -494,7 +494,7 @@ const restPlayersHtml = players
       log(
         `💰 發現金塊 ${amount}！${active.length} 名玩家平分 ${eachBase}，多出 ${leftover} 進入保留區 (${goldReserve})`
       );
-      updateUI();
+      updateUI(); 
     }
 
     function luckEvent() {
@@ -664,7 +664,7 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
   let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
   // 新增：記錄玩家狀態
   const record = {
-    id: playCount,
+    id: generateGameId(),
     timestamp: new Date().toLocaleString(),
         turns: turn, // 新增：本局回合數
     players: players.map((p) => {
@@ -690,24 +690,88 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
   localStorage.setItem("myTotalGold", totalGold.toString());
 }
 
+//產生唯一 ID
+function generateGameId() {
+  const today = new Date().toISOString().slice(0, 10); // e.g. "2025-08-01"
+  const history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
+  const todayGames = history.filter(h => typeof h.id === "string" && h.id.startsWith(today));
+  const count = todayGames.length + 1;
+  return `${today}_${String(count).padStart(2, '0')}`;
+}
+
+function cleanUpOldHistory() {
+  let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
+
+  const today = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // e.g. "20250801"
+  let dailyCount = 1;
+
+  const newHistory = history.map((record) => {
+    // 若 id 不是 string，就重建
+    if (typeof record.id !== "string" || !record.id.includes("-")) {
+      record.id = `${today}-${dailyCount++}`;
+    }
+    return record;
+  });
+
+  localStorage.setItem("treasureHuntHistory", JSON.stringify(newHistory));
+}
+
+function parseTaiwanDateTime(str) {
+  // 範例輸入： "2025/8/1 下午8:32:20"
+  let [datePart, timePart] = str.split(" ");
+  if (!datePart || !timePart) return new Date(NaN);
+
+  // 解析日期
+  const [year, month, day] = datePart.split("/").map(n => n.padStart ? n.padStart(2, '0') : String(n)); // 補0成兩位字串
+
+  // 解析時間與 AM/PM
+  let isPM = false;
+  if (timePart.startsWith("上午")) {
+    isPM = false;
+    timePart = timePart.replace("上午", "").trim();
+  } else if (timePart.startsWith("下午")) {
+    isPM = true;
+    timePart = timePart.replace("下午", "").trim();
+  }
+
+  let [hour, minute, second] = timePart.split(":").map(Number);
+
+  if (isPM && hour < 12) hour += 12;
+  if (!isPM && hour === 12) hour = 0;
+
+  // 把日期、時間組成 ISO 字串格式 "YYYY-MM-DDTHH:mm:ss"
+  const isoStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:${String(second).padStart(2,'0')}`;
+
+  return new Date(isoStr);
+}
+
+
 function showHistory() {
   let history = JSON.parse(localStorage.getItem("treasureHuntHistory") || "[]");
   if (history.length === 0) {
     alert("目前無遊玩歷史");
     return;
   }
-  let html = "";
-  history.forEach((record) => {
-    let maxGold = Math.max(...record.players.map((p) => p.gold));
-    const playersHtml = record.players
-      .map((p) => {
-        const highlightClass = p.gold === maxGold ? "highlight" : "";
-        // 顯示狀態
-        return `<div class="${highlightClass}">${p.name}：${p.gold} 金塊（${p.status}）</div>`;
-      })
-      .join("");
-    html += `<div><strong>遊戲 #${record.id} (${record.timestamp})　回合數：${record.turns || "-"} </strong><br/>${playersHtml}</div><hr/>`;
-  });
+    let html = `<div style="font-weight:bold;margin-bottom:8px;">📊 總遊玩次數：${history.length} 場</div>`;
+
+history = history
+    .slice()
+    .sort((a,b) => parseTaiwanDateTime(b.timestamp) - parseTaiwanDateTime(a.timestamp));
+
+
+
+history.forEach((record) => {
+
+  let maxGold = Math.max(...record.players.map((p) => p.gold));
+  const playersHtml = record.players
+    .map((p) => {
+      const highlightClass = p.gold === maxGold ? "highlight" : "";
+      return `<div class="${highlightClass}">${p.name}：${p.gold} 金塊（${p.status}）</div>`;
+    })
+    .join("");
+  html += `<div><strong>🕒 第 ${record.id} 局（${record.timestamp}）　回合數：${record.turns || "-"} </strong><br/>${playersHtml}</div><hr/>`;
+});
+
   historyPanel.innerHTML = html;
   historyPanel.style.display = "block";
   historyIconBtn.textContent = "❌";
@@ -1092,6 +1156,10 @@ function scrollLogToBottom() {
 function getGoldIcon({ width = 24, height = 24, className = "" } = {}) {
   return `<img src="img/gold.png" alt="金塊" class="${className}" style="width:${width}px;height:${height}px;vertical-align:middle;">`;
 }
+//window.load
+window.addEventListener("load", () => {
+ // cleanUpOldHistory();  
+});
 
 
   </script>
