@@ -532,23 +532,36 @@ const restPlayersHtml = players
       p.bad[type]++;
       log(`⚠️ ${p.name} 累積 ${name}：${p.bad[type]}/2`);
       // AI 強化：厄運超過2時考慮離開
-      if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
-        // 依據回合與金塊差距決定離開意願
-        const maxGold = Math.max(...players.map(pl => pl.gold));
-        const goldGap = maxGold - p.gold;
-        let leaveChance = 0.5; // 基本離開機率
-        if (turn > 20) leaveChance += 0.3; // 回合數高時提高離開意願
-        if (goldGap > 10) leaveChance += 0.2; // 落後太多也想離開
-          if (goldReserve > 10) leaveChance += 0.2; // 保留金塊多時再提高
-  if (rank <= 3) leaveChance += 0.2;
- 
-        if (Math.random() < leaveChance) {
-          p.left = true;
-          p.gold += goldReserve;
-          goldReserve = 0;
-          log(`🤖 ${p.name} 因厄運過多決定離開探險，帶走金塊與保留金！`);
-        }
-      }
+if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
+  // 先觀察是否有好運希望
+  if (p.luck.defense === 0) {
+    p.waitLuck = (p.waitLuck || 0) + 1;
+  } else {
+    p.waitLuck = 0; // 若有好運則重置觀望
+  }
+
+  // 觀望超過 2 回合仍沒等到好運才考慮離開
+  if (p.waitLuck >= 2) {
+    const maxGold = Math.max(...players.map(pl => pl.gold));
+    const goldGap = maxGold - p.gold;
+
+    let leaveChance = 0.4;
+    if (turn > 20) leaveChance += 0.3;
+    if (goldGap > 10) leaveChance += 0.2;
+    if (goldReserve > 10) leaveChance += 0.2;
+    if (rank <= 3) leaveChance += 0.2;
+
+    if (Math.random() < leaveChance) {
+      p.left = true;
+      p.gold += goldReserve;
+      const taken = goldReserve;
+      goldReserve = 0;
+      log(`🤖 ${p.name} 厄運過多且未獲好運，觀望數回合後選擇離開探險（帶走 ${taken} 金塊）`);
+    }
+  } else {
+    log(`🤖 ${p.name} 厄運過多，但決定再觀望一回合，希望獲得好運抵擋...`);
+  }
+}
       if (Object.values(p.bad).filter((b) => b >= 2).length >= 1) {
         p.alive = false;
         p.gold = 0; // 死亡時金塊歸零
