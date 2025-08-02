@@ -348,6 +348,10 @@ const restPlayersHtml = players
  function updateUI() {
   const maxGold = Math.max(...players.map(p => p.gold));
 
+      if (!players[0].alive) {
+      //玩家A（你）已死亡 隱藏離開探險按鈕
+      leaveBtn.style.display = "none";
+    }
 
   // 手機版橫向簡化顯示
   if (window.innerWidth <= 600) {
@@ -556,7 +560,7 @@ const restPlayersHtml = players
     }
 
    function leftPlayerRandomEvent() {
-    countdown = 60; // 重置倒數計時
+    
   const leftPlayers = getLeftPlayers();
   leftPlayers.forEach((p, idx) => {
     // 玩家A（你）才顯示回歸按鈕，AI自動判斷
@@ -861,7 +865,7 @@ function aiChooseTwo() {
       return;
     }
     const ai = selected[aiIndex];
-    let aiCountdown = 5;
+    let aiCountdown = 10;
     log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
     const aiInterval = setInterval(() => {
       aiCountdown--;
