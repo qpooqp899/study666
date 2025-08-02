@@ -482,43 +482,43 @@ const restPlayersHtml = players
       updateUI();
     }
 
-    // function luckEvent() {
-    //   const active = getActivePlayers();
-    //   if (active.length === 0) return;
-    //   active.forEach((p) => {
-    //     if (Math.random() < 0.5) {
-    //       p.luck.defense++;
-    //       log(`🍀 ${p.name} 獲得好運（抵擋厄運 +1）`);
-    //     } else {
-    //       p.luck.bonus++;
-    //       log(`🍀 ${p.name} 獲得好運（金塊加倍 +1）`);
-    //     }
-    //   }
-    
-    // );
-    //   updateUI();
-    // }
-
     function luckEvent() {
-  const active = getActivePlayers();
-  if (active.length === 0) return;
-
-  // 所有人統一獲得的好運類型
-  const isDefense = Math.random() < 0.5;
-
-  active.forEach((p) => {
-    if (isDefense) {
-      p.luck.defense++;
-    } else {
-      p.luck.bonus++;
+      const active = getActivePlayers();
+      if (active.length === 0) return;
+      active.forEach((p) => {
+        if (Math.random() < 0.5) {
+          p.luck.defense++;
+          log(`🍀 ${p.name} 獲得好運（抵擋厄運 +1）`);
+        } else {
+          p.luck.bonus++;
+          log(`🍀 ${p.name} 獲得好運（金塊加倍 +1）`);
+        }
+      }
+    
+    );
+      updateUI();
     }
-  });
 
-  const luckTypeText = isDefense ? "抵擋厄運 +1" : "金塊加倍 +1";
-  log(`🍀 全體幸運！所有玩家獲得好運（${luckTypeText}）`);
+//     function luckEvent() {
+//   const active = getActivePlayers();
+//   if (active.length === 0) return;
 
-  updateUI();
-}
+//   // 所有人統一獲得的好運類型
+//   const isDefense = Math.random() < 0.5;
+
+//   active.forEach((p) => {
+//     if (isDefense) {
+//       p.luck.defense++;
+//     } else {
+//       p.luck.bonus++;
+//     }
+//   });
+
+//   const luckTypeText = isDefense ? "抵擋厄運 +1" : "金塊加倍 +1";
+//   log(`🍀 全體幸運！所有玩家獲得好運（${luckTypeText}）`);
+
+//   updateUI();
+// }
 
    function misfortuneEvent(type, name) {
   const active = getActivePlayers();
