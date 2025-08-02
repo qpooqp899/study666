@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🐉尋寶奪金：探險小遊戲</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#222222">
+
   <style>
     body {
       font-family: sans-serif;
@@ -937,7 +940,7 @@ function aiChooseTwo() {
   const aiCandidates = players.filter(p => p.isAI && p.alive && !p.left);
   if (aiCandidates.length > 0) {
     const ai = aiCandidates[Math.floor(Math.random() * aiCandidates.length)];
-    let aiCountdown = 5;
+    let aiCountdown = 10;
     log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
     const aiInterval = setInterval(() => {
       aiCountdown--;
@@ -1058,6 +1061,17 @@ function nextEvent() {
 
     updateUI();
     updateMyTotalGold();
+
+    if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(() => {
+      console.log("Service Worker 註冊成功");
+    }).catch((err) => {
+      console.error("Service Worker 註冊失敗:", err);
+    });
+  });
+}
+
   </script>
 </body>
 </html>
