@@ -347,6 +347,11 @@ const restPlayersHtml = players
 
  function updateUI() {
   const maxGold = Math.max(...players.map(p => p.gold));
+
+    if (!p[0].alive) {
+      //玩家A（你）已死亡 隱藏離開探險按鈕
+      leaveBtn.style.display = "none";
+    }
   // 手機版橫向簡化顯示
   if (window.innerWidth <= 600) {
     playersEl.innerHTML = players
@@ -956,6 +961,8 @@ function aiChooseTwo() {
 function nextEvent() {
   clearInterval(countdownTimer);
   nextBtn.style.display = "inline-block";
+
+  
 
   if (checkGameOver()) return;
 
