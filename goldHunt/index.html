@@ -651,12 +651,19 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
       if (Math.random() < comebackChance) {
         p.left = false;
         log(`🔄 ${p.name} 離開後決定回歸探險！（排名：${rank}）`);
+
+  
       } else {
         p.gold += 1;
         log(`💰 ${p.name} 離開中獲得 1 金塊（自動累積）`);
       }
     }
   });
+        // 玩家A 沒死亡 也沒離開 顯示離開按鈕 
+        if (players[0].alive && !players[0].left) {
+          leaveBtn.style.display = "inline-block";
+          leaveBtn.textContent = "🚪 離開探險";
+        }
   updateUI();
 }
    function saveGameHistory() {
