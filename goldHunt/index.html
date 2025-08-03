@@ -1067,15 +1067,24 @@ function aiChooseTwo() {
         p.gold += each;
         log(`🏆 ${p.name} 獲得超級金塊 ${each} 顆！`);
       });
-      const leftover = 30 % superGoldLeavers.length;
-      if (leftover > 0) {
-        goldReserve += leftover;
-        log(`剩餘 ${leftover} 顆金塊進入保留區 (${goldReserve})。`);
-      }
-    } else {
-      goldReserve += 30;
-      log("😢 沒有人選擇離開，超級金塊進入保留區！");
+
+      // 分配保留金塊
+    const reserveEach = Math.floor(goldReserve / superGoldLeavers.length);
+    superGoldLeavers.forEach(p => {
+      p.gold += reserveEach;
+      log(`💰 ${p.name} 拿走保留金塊 ${reserveEach} 顆`);
+    });
+    const reserveLeftover = goldReserve % superGoldLeavers.length;
+
+    // 剩下的進入保留區（下次）
+    goldReserve = leftover + reserveLeftover;
+    if (goldReserve > 0) {
+      log(`剩餘 ${goldReserve} 顆金塊進入保留區。`);
     }
+  } else {
+    goldReserve += 30;
+    log("😢 沒有人選擇離開，超級金塊進入保留區！");
+  }
     updateUI();
   }
 }
@@ -1122,6 +1131,14 @@ function nextEvent() {
   startCountdown();
 }
 
+// 新增神秘金塊事件
+function mysteriousGoldEvent() {
+  const amount = Math.floor(Math.random() * 11) + 10; // 隨機 11~20 金塊
+  goldReserve += amount;
+  log(`✨ 遇到神秘金塊，新增 ${amount} 金塊進入保留區！目前保留區金塊：${goldReserve}`);
+  updateUI();
+}
+
     const events = [
       () => goldEvent(5),
       () => goldEvent(10),
@@ -1130,6 +1147,7 @@ function nextEvent() {
          () => goldEvent(20),
       () => luckEvent(),
       () => luckEvent(),
+      () => mysteriousGoldEvent(),
       () => misfortuneEvent("trap", "掉進陷阱"),
       () => misfortuneEvent("zombie", "遇到殭屍"),
       () => misfortuneEvent("poison", "毒蟲咬傷"),
