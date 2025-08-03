@@ -1,6 +1,6 @@
 {
   "name": "尋寶奪金",
-  "short_name": "探險",
+  "short_name": "尋寶奪金",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -18,3 +18,4 @@
     }
   ]
 }
+
