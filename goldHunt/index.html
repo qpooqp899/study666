@@ -225,6 +225,9 @@
   <button id="leaveBtn" onclick="playerLeave()">🚪 離開探險</button>
   <button id="restartBtn" onclick="restartGame()">🔄 重新開始遊戲</button>
   <button id="nextBtn" onclick="manualNextEvent()">⏭️ 下一步（倒數中）</button>
+  <div id="goldReservePanel" style="font-size:18px; margin-bottom:10px; color:#d10000;">
+ <img src="img/gold.png" alt="金塊" style="width:24px;height:24px;vertical-align:middle;margin-right:4px;"> 保留金塊：<span id="goldReserveAmount">0</span>
+</div>
 </div>
 
 <!-- 再放 log -->
@@ -362,7 +365,7 @@ const restPlayersHtml = players
 
  function updateUI() {
   const maxGold = Math.max(...players.map(p => p.gold));
-
+  document.getElementById("goldReserveAmount").textContent = goldReserve;
       if (!players[0].alive) {
       //玩家A（你）已死亡 隱藏離開探險按鈕
       leaveBtn.style.display = "none";
@@ -612,6 +615,14 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
     }
 
    function leftPlayerRandomEvent() {
+
+            // 玩家A 沒死亡 也沒離開 顯示離開按鈕 
+        if (players[0].alive && !players[0].left) {
+          leaveBtn.style.display = "inline-block";
+          leaveBtn.textContent = "🚪 離開探險";
+         leaveBtn.style.display = "none";
+
+        }
     
   const leftPlayers = getLeftPlayers();
   leftPlayers.forEach((p, idx) => {
@@ -619,15 +630,15 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
     if (!gameOver && !p.isAI) {
       let countdown = 30;
       leaveBtn.style.display = "inline-block";
-      leaveBtn.textContent = `🔄 回歸探險（${countdown}s）`;
+      leaveBtn.textContent = `🔄 回歸探險（${countdown}s）有遇到超級金塊事件才能離開`;
       leaveBtn.disabled = false;
 
       const interval = setInterval(() => {
         countdown--;
-        leaveBtn.textContent = `🔄 回歸探險（${countdown}s）`;
+        leaveBtn.textContent = `🔄 回歸探險（${countdown}s）有遇到超級金塊事件才能離開`;
         if (countdown <= 0) {
           clearInterval(interval);
-          leaveBtn.style.display = "none";
+        
           log(`⏰ ${p.name} 超過10秒未選擇，放棄本次回歸機會！`);
         }
       }, 1000);
@@ -635,10 +646,11 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
       leaveBtn.onclick = function () {
         clearInterval(interval);
         p.left = false;
-        leaveBtn.style.display = "none";
-        log(`🔄 ${p.name} 選擇回歸探險！`);
+
+        log(`🔄 ${p.name} 選擇回歸探險 !`);
         leaveBtn.disabled = false;
         leaveBtn.textContent = `🚪 離開探險`;
+        leaveBtn.style.display = "none"; // 回歸後隱藏按鈕
         updateUI();
       };
     } else if (!gameOver && p.isAI) {
@@ -659,13 +671,7 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
       }
     }
   });
-        // 玩家A 沒死亡 也沒離開 顯示離開按鈕 
-        if (players[0].alive && !players[0].left) {
-          leaveBtn.style.display = "inline-block";
-          leaveBtn.textContent = "🚪 離開探險";
-         leaveBtn.style.display = "none";
 
-        }
   updateUI();
 }
    function saveGameHistory() {
@@ -861,6 +867,7 @@ function showWinner() {
       startBtn.style.display = "inline-block";
       nextBtn.style.display = "none";
       leaveBtn.style.display = "none";
+      leaveBtn.textContent = "🚪 離開探險";
       restartBtn.style.display = "none";
     }
 
@@ -953,7 +960,7 @@ function superGoldEvent(period) {
 }
 
 
-  // 玩家自己決定
+  // // 玩家自己決定
   leaveBtn.style.display = "inline-block";
   leaveBtn.onclick = function () {
     players[0].left = true;
@@ -966,7 +973,9 @@ function superGoldEvent(period) {
 
 // 60秒內沒選，視為不離開
 setTimeout(() => {
-  leaveBtn.style.display = "none";
+ //玩家A 活著 才會顯示    
+ if (players[0].alive && !players[0].left) {
+ leaveBtn.style.display = "none";
   leaveBtn.onclick = playerLeave;
   if (!players[0].left && players[0].alive) {
     log(`⏰ ${players[0].name} 未選擇離開，繼續冒險！`);
@@ -976,6 +985,7 @@ setTimeout(() => {
     log("玩家A已死亡或離開，改由兩位AI進行超級金塊選擇！");
 
   }
+ }
 }, 60000);
 
 function aiChooseTwo() {
@@ -990,7 +1000,7 @@ function aiChooseTwo() {
       return;
     }
     const ai = selected[aiIndex];
-    let aiCountdown = 10;
+    let aiCountdown = 2;
     log(`🤖 ${ai.name} 正在考慮是否離開...（剩餘 ${aiCountdown} 秒）`);
     const aiInterval = setInterval(() => {
       aiCountdown--;
@@ -1077,9 +1087,11 @@ function aiChooseTwo() {
       log(`💰 ${p.name} 拿走保留金塊 ${reserveEach} 顆`);
     });
     const reserveLeftover = goldReserve % superGoldLeavers.length;
-
+    goldReserve = 0; // 清空本輪保留金塊，接下來只留下剩餘的
     // 剩下的進入保留區（下次）
     goldReserve = leftover + reserveLeftover;
+    
+
     if (goldReserve > 0) {
       log(`剩餘 ${goldReserve} 顆金塊進入保留區。`);
     }
