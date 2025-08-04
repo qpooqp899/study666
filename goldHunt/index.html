@@ -616,6 +616,8 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
 
    function leftPlayerRandomEvent() {
 
+      log("⏳ 進入離開玩家決策階段（10秒內），AI 玩家將選擇是否回歸探險...");
+      
             // 玩家A 沒死亡 也沒離開 顯示離開按鈕 
         if (players[0].alive && !players[0].left) {
           leaveBtn.style.display = "inline-block";
@@ -628,7 +630,7 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
   leftPlayers.forEach((p, idx) => {
     // 玩家A（你）才顯示回歸按鈕，AI自動判斷
     if (!gameOver && !p.isAI) {
-      let countdown = 30;
+      let countdown = 10;
       leaveBtn.style.display = "inline-block";
       leaveBtn.textContent = `🔄 回歸探險（${countdown}s）有遇到超級金塊事件才能離開`;
       leaveBtn.disabled = false;
@@ -952,7 +954,8 @@ function superGoldEvent(period) {
   let superGoldLeavers = [];
  if (!players[0].alive || players[0].left) {
   // 玩家A已死亡或離開，由兩位AI選擇
-   countdown = 20; // 重置倒數計時
+leaveBtn.style.display = true; // 顯示離開按鈕
+   countdown = 10; // 重置倒數計時
   log("玩家A已死亡或離開，改由兩位AI進行超級金塊選擇！");
   aiChooseTwo();
 } else {
@@ -960,8 +963,9 @@ function superGoldEvent(period) {
 }
 
 
-  // // 玩家自己決定
-  leaveBtn.style.display = "inline-block";
+  // // 玩家自己決定 玩家A活著或沒離開才會出發
+  if( players[0].alive && !players[0].left) {
+     leaveBtn.style.display = "inline-block";
   leaveBtn.onclick = function () {
     players[0].left = true;
     superGoldLeavers.push(players[0]);
@@ -970,6 +974,11 @@ function superGoldEvent(period) {
     leaveBtn.onclick = playerLeave;
    
   };
+  } else {
+    leaveBtn.style.display = "none"; // 玩家A已死亡或離開，隱藏按鈕
+  }
+
+
 
 // 60秒內沒選，視為不離開
 setTimeout(() => {
@@ -1109,7 +1118,14 @@ function nextEvent() {
   clearInterval(countdownTimer);
   nextBtn.style.display = "inline-block";
 
-  
+  //玩家A死亡或離開，直接跳過下一事件
+  if (!players[0].alive || players[0].left) {
+    log("玩家A已死亡或離開，跳過下一事件！");
+   
+    //離開按鈕隱藏
+    leaveBtn.style.display = "none";
+   
+  }
 
   if (checkGameOver()) return;
 
