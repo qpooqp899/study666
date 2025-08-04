@@ -264,6 +264,9 @@ document.addEventListener("click", function(e) {
     let gameOver = false;
     let playCount = 0;
 
+    //回歸次數
+    let comebackCount = 0;
+
     const players = [
       {
         name: "玩家A（你）",
@@ -549,37 +552,7 @@ const restPlayersHtml = players
     } else {
       p.bad[type]++;
       log(`⚠️ ${p.name} 累積 ${name}：${p.bad[type]}/2`);
-      // AI 強化：厄運超過2時考慮離開
-if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
-  // 先觀察是否有好運希望
-  if (p.luck.defense === 0) {
-    p.waitLuck = (p.waitLuck || 0) + 1;
-  } else {
-    p.waitLuck = 0; // 若有好運則重置觀望
-  }
-
-  // 觀望超過 2 回合仍沒等到好運才考慮離開
-  if (p.waitLuck >= 2) {
-    const maxGold = Math.max(...players.map(pl => pl.gold));
-    const goldGap = maxGold - p.gold;
-
-    let leaveChance = 0.4;
-    if (turn > 20) leaveChance += 0.3;
-    if (goldGap > 10) leaveChance += 0.2;
-    if (goldReserve > 10) leaveChance += 0.2;
-    if (rank <= 3) leaveChance += 0.2;
-
-    if (Math.random() < leaveChance) {
-      p.left = true;
-      p.gold += goldReserve;
-      const taken = goldReserve;
-      goldReserve = 0;
-      log(`🤖 ${p.name} 厄運過多且未獲好運，觀望數回合後選擇離開探險（帶走 ${taken} 金塊）`);
-    }
-  } else {
-    log(`🤖 ${p.name} 厄運過多，但決定再觀望一回合，希望獲得好運抵擋...`);
-  }
-}
+    
       if (Object.values(p.bad).filter((b) => b >= 2).length >= 1) {
         p.alive = false;
         p.gold = 0; // 死亡時金塊歸零
@@ -634,7 +607,8 @@ if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
       leaveBtn.style.display = "inline-block";
       leaveBtn.textContent = `🔄 回歸探險（${countdown}s）有遇到超級金塊事件才能離開`;
       leaveBtn.disabled = false;
-
+      comebackCount += 1; // 增加回歸次數
+      log(`🔄 ${p.name} 離開後決定是否回歸探險...`);
       const interval = setInterval(() => {
         countdown--;
         leaveBtn.textContent = `🔄 回歸探險（${countdown}s）有遇到超級金塊事件才能離開`;
@@ -896,6 +870,9 @@ function showWinner() {
 }
 
     function nextEvent() {
+
+
+
       clearInterval(countdownTimer);
       nextBtn.style.display = "inline-block";
 
@@ -907,10 +884,48 @@ function showWinner() {
       const event = events[Math.floor(Math.random() * events.length)];
       event();
 
+
+        // AI 強化：厄運超過2時考慮離開
+if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
+  // 先觀察是否有好運希望
+  if (p.luck.defense === 0) {
+    p.waitLuck = (p.waitLuck || 0) + 1;
+  } else {
+    p.waitLuck = 0; // 若有好運則重置觀望
+  }
+
+  // 觀望超過 2 回合仍沒等到好運才考慮離開
+  if (p.waitLuck >= 2) {
+    const maxGold = Math.max(...players.map(pl => pl.gold));
+    const goldGap = maxGold - p.gold;
+
+    let leaveChance = 0.4;
+    if (turn > 20) leaveChance += 0.3;
+    if (goldGap > 10) leaveChance += 0.2;
+    if (goldReserve > 10) leaveChance += 0.2;
+    if (rank <= 3) leaveChance += 0.2;
+
+    if (Math.random() < leaveChance) {
+      p.left = true;
+      p.gold += goldReserve;
+      const taken = goldReserve;
+      goldReserve = 0;
+      log(`🤖 ${p.name} 厄運過多且未獲好運，觀望數回合後選擇離開探險（帶走 ${taken} 金塊）`);
+    }
+  } else {
+    log(`🤖 ${p.name} 厄運過多，但決定再觀望一回合，希望獲得好運抵擋...`);
+  }
+}
+
       startCountdown();
     }
 
     function manualNextEvent() {
+
+       if( players[0].alive && !players[0].left && comebackCount == 0) {
+            leaveBtn.style.display = "inline-block";
+            leaveBtn.textContent = "🚪 離開探險";
+        }
       clearInterval(countdownTimer);
       nextEvent();
     }
