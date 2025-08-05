@@ -494,6 +494,9 @@ function levelUp() {
 function savePlayer() {
   localStorage.setItem("playerData", JSON.stringify(player));
 }
+function saveEnemy() {
+  localStorage.setItem("enemyData", JSON.stringify(enemy));
+}
 
 function submitAnswer() {
   if (selectedChars.length !== 4) {
@@ -537,6 +540,8 @@ localStorage.setItem("enemyData", JSON.stringify(enemy));
 
       }
       savePlayer();
+      //紀錄ememy資料
+      saveEnemy();
       updateUI();
       loadNewQuestion();
     }, 800);
@@ -563,6 +568,7 @@ log(`👹 你受傷了，失去 10 金幣！`);
       }
        saveCoins();
       // savePlayer();
+      saveEnemy();
       updateUI();
       loadNewQuestion();
     }, 800);
@@ -581,7 +587,9 @@ window.onload = async () => {
     idioms = await res.json();
     updateUI();
     loadNewQuestion();
-
+    // 讀取playerData 資料
+    player = JSON.parse(localStorage.getItem("playerData")) || player;
+    enemy = JSON.parse(localStorage.getItem("enemyData")) || enemy;
     // 顯示歷史紀錄
     battleHistory.forEach(h => {
       const item = document.createElement("div");
