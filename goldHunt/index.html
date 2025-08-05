@@ -264,6 +264,11 @@ document.addEventListener("click", function(e) {
     let gameOver = false;
     let playCount = 0;
 
+    //新增exp 過關次數
+    let expCount = 0; // 過關次數
+    //新增：紀錄遊玩次數
+
+
     //回歸次數
     let comebackCount = 0;
 
@@ -789,8 +794,30 @@ function closeHistory() {
       }
       if (turn >= MAX_TURNS) {
         gameOver = true;
-        log("\n🎉 遊戲結束！所有回合完成！");
+        log("\n🎉 遊戲結束！所有回合完成！超級金塊事件開始");
+        
          showWinner();
+        
+         //存活者 +100 金塊
+        active.forEach((p) => {
+          p.gold += 100;
+          log(`💰 ${p.name} 獲得額外 100 金塊！`);
+          });
+
+          //保留金塊給存活者且金塊最多的玩家
+        if (goldReserve > 0) {
+          const maxGold = Math.max(...active.map(p => p.gold));
+          const winners = active.filter(p => p.gold === maxGold);
+          if (winners.length > 0) {
+            const taken = Math.floor(goldReserve / winners.length);
+            winners.forEach(p => {
+              p.gold += taken;
+              log(`💰  ${p.name} 獲得保留金塊 ${taken}！`);
+            });
+            goldReserve -= taken * winners.length;
+          }
+        }  
+         updateUI();
         saveGameHistory();
         showRestartBtn();
         return true;
@@ -884,6 +911,43 @@ function showWinner() {
       const event = events[Math.floor(Math.random() * events.length)];
       event();
 
+    
+
+    
+      //AI 強化:死亡玩家與離開玩家>3  AI玩家排名> 2 AI離開探險
+      const activePlayers = getActivePlayers();
+      const leftPlayers = getLeftPlayers();
+      const aiPlayers = players.filter(p => p.isAI && p.alive && !p.left);
+      const aiCount = aiPlayers.length;
+      const deadCount = players.filter(p => !p.alive).length;
+      const leftCount = players.filter(p => p.left && p.alive).length;
+      const totalAI = aiCount + deadCount + leftCount;
+      const rank = [...players].sort((a, b) => b.gold - a.gold).findIndex(p => p === players[0]) + 1; // 玩家A（你）的排名
+      if (aiCount > 3 || leftCount > 3 || deadCount > 3 || totalAI > 3) {
+  players.forEach((p) => {
+    if (p.isAI && p.alive && !p.left) {
+      // AI 玩家決定是否離開探險
+      const maxGold = Math.max(...players.map(pl => pl.gold));
+      const goldGap = maxGold - p.gold;
+      let leaveChance = 0.4;
+      if (turn > 20) leaveChance += 0.3; // 超過 20 回合增加離開機率
+      if (goldGap > 10) leaveChance += 0.2; // 金塊差距大於 10 增加離開機率
+      if (rank <= 3) leaveChance += 0.2; // 前 3 名增加離開機率
+      if (Math.random() < leaveChance) {
+        p.left = true;
+        p.gold += goldReserve; // 帶走保留金塊
+        const taken = goldReserve;
+        goldReserve = 0;
+        log(`🤖 ${p.name} 決定離開探險（帶走 ${taken} 金塊）`)
+            } else {  
+                  log(`🤖 ${p.name} 決定繼續探險`                     
+                  );
+      }
+    }
+  });
+  } else {
+  // log("🤖 AI 玩家數量正常，繼續探險")
+      };
 
         // AI 強化：厄運超過2時考慮離開
 if (p.isAI && p.bad[type] > 2 && p.alive && !p.left) {
